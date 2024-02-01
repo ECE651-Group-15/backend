@@ -1,4 +1,4 @@
-package uwaterloo.exchange;
+package infrastructure;
 
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.Quarkus;
