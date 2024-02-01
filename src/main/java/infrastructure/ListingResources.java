@@ -11,7 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 @ApplicationScoped
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
-public class ListingManagementResource {
+public class ListingResources {
 
     @Inject
     public ListingService listingService;

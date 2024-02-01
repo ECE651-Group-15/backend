@@ -1,8 +1,8 @@
-package uwaterloo.exchange;
+package infrastructure;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
-class GreetingResourceIT extends GreetingResourceTest {
+class ListingResourcesIT extends ListingResourceTest {
     // Execute the same tests but in packaged mode.
 }
