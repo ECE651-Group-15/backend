@@ -1,4 +1,4 @@
-package api.dto.out;
+package infrastructure.dto.out;
 
 import domain.ListingDetails;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package api.dto.in;
+package infrastructure.dto.out;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,6 +6,7 @@ import lombok.Builder;
 @AllArgsConstructor
 @Builder
 public class ListingPageDto {
+    public final ListingDetailsDto [] listings;
     public final Integer page;
     public final Integer pageSize;
 }

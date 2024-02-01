@@ -1,5 +1,7 @@
 package domain;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 import java.io.FileOutputStream;
 import java.util.Base64;
 import java.io.File;
@@ -7,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
+@ApplicationScoped
 public class ListingService {
     public ListingDetails createListing(CreateListing createListing) {
         return null;
@@ -20,8 +23,8 @@ public class ListingService {
         return null;
     }
 
-    public ListingDetails getListing(String listingId) {
-        return null;
+    public String getListing(String listingId) {
+        return "hello";
     }
 
     public ListingDetails[] getListings() {

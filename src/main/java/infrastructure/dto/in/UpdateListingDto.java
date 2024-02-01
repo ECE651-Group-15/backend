@@ -1,4 +1,4 @@
-package api.dto.in;
+package infrastructure.dto.in;
 
 import domain.Category;
 import domain.ListingDetails;
