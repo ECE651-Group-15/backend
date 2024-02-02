@@ -14,6 +14,6 @@ class ListingResourceTest {
           .when().get("/hello")
           .then()
              .statusCode(200)
-             .body(is("Hello"));
+             .body(is("hello"));
     }
 }

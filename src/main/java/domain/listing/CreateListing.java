@@ -1,5 +1,6 @@
-package domain;
+package domain.listing;
 
+import domain.GeoPosition;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,15 +9,16 @@ import java.util.Optional;
 
 @Data
 @Builder
-public class UpdateListing {
-    String id;
+public class CreateListing {
     String title;
     String description;
     Optional<Double> price;
-    String location;
-    String category;
+    GeoPosition position;
+    Category category;
     String userId;
-    String status;
+    ListingStatus status;
     List<String> images;
-    Integer starCount;
+    int starCount;
+    String createdAt;
+    String updatedAt;
 }

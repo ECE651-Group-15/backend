@@ -1,4 +1,4 @@
-package domain;
+package domain.listing;
 
 public enum Category {
     BOOKS,

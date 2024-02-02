@@ -1,6 +1,6 @@
 package infrastructure;
 
-import domain.ListingService;
+import domain.listing.ListingService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;

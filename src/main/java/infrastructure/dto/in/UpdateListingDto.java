@@ -1,8 +1,9 @@
 package infrastructure.dto.in;
 
-import domain.Category;
-import domain.ListingDetails;
-import domain.ListingStatus;
+import domain.listing.Category;
+import domain.GeoPosition;
+import domain.listing.ListingStatus;
+import domain.listing.UpdateListing;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
@@ -16,20 +17,24 @@ public class UpdateListingDto {
     public final String title;
     public final String description;
     public final Optional<Double> price;
-    public final String location;
+    public final Double latitude;
+    public final Double longitude;
     public final String category;
     public final String userId;
     public final String status;
     public final List<String> images;
     public final Integer starCount;
 
-    public ListingDetails toDomain() {
-        return ListingDetails.builder()
+    public UpdateListing toDomain() {
+        return UpdateListing.builder()
                 .id(id)
                 .title(title)
                 .description(description)
                 .price(price)
-                .location(location)
+                .position(GeoPosition.builder()
+                                     .longitude(longitude)
+                                     .latitude(latitude)
+                                     .build())
                 .category(Category.valueOf(category))
                 .userId(userId)
                 .status(ListingStatus.valueOf(status))
