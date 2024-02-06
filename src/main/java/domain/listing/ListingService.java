@@ -32,7 +32,8 @@ public class ListingService {
                                                       .createdAt(createListing.getCreatedAt())
                                                       .updatedAt(createListing.getUpdatedAt())
                                                       .build();
-        return listingRepository.save(listingDetails);
+        listingRepository.save(listingDetails);
+        return listingDetails;
     }
 
     public ListingDetails updateListing(UpdateListing updateListing) {

@@ -4,6 +4,6 @@ import java.util.Optional;
 
 public interface ListingRepositoryInterface {
     Optional<ListingDetails> findById(String id);
-    ListingDetails save(ListingDetails listing);
-    void delete(String id);
+    void save(ListingDetails listing);
+    Optional<ListingDetails> delete(String id);
 }
