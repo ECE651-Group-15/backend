@@ -21,8 +21,8 @@ public class ListingDetailsDto {
     public final String status;
     public final List<String> images;
     public final Integer starCount;
-    public final String createdAt;
-    public final String updatedAt;
+    public final Long createdAt;
+    public final Long updatedAt;
 
     public static ListingDetailsDto fromDomain(ListingDetails listingDetails) {
         return ListingDetailsDto.builder()
@@ -30,17 +30,15 @@ public class ListingDetailsDto {
                                 .title(listingDetails.getTitle())
                                 .description(listingDetails.getDescription())
                                 .price(listingDetails.getPrice())
-                                .latitude(listingDetails.getPosition().getLatitude())
-                                .latitude(listingDetails.getPosition().getLongitude())
+                                .latitude(listingDetails.getLatitude())
+                                .latitude(listingDetails.getLongitude())
                                 .category(String.valueOf(listingDetails.getCategory()))
                                 .userId(listingDetails.getUserId())
                                 .status(String.valueOf(listingDetails.getStatus()))
-                                .images(listingDetails.getImages().stream()
-                                                      .map(ListingDetails::encodeImage)
-                                                      .toList())
+                                .images(listingDetails.getImages())
                                 .starCount(listingDetails.getStarCount())
-                                .createdAt(listingDetails.getCreatedAt())
-                                .updatedAt(listingDetails.getUpdatedAt())
+                                .createdAt(listingDetails.getCreatedAt().toEpochMilli())
+                                .updatedAt(listingDetails.getUpdatedAt().toEpochMilli())
                                 .build();
     }
 }

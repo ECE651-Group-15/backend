@@ -3,7 +3,6 @@ package infrastructure.dto.in;
 
 import domain.listing.Category;
 import domain.listing.CreateListing;
-import domain.GeoPosition;
 import domain.listing.ListingStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,10 +28,8 @@ public class CreateListingDto {
                             .title(title)
                             .description(description)
                             .price(price)
-                            .position(GeoPosition.builder()
-                                                 .longitude(longitude)
-                                                 .latitude(latitude)
-                                                 .build())
+                            .longitude(longitude)
+                            .latitude(latitude)
                             .category(Category.valueOf(category))
                             .userId(userId)
                             .status(ListingStatus.valueOf(status))

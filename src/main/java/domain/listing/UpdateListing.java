@@ -1,6 +1,5 @@
 package domain.listing;
 
-import domain.GeoPosition;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,7 +13,8 @@ public class UpdateListing {
     String title;
     String description;
     Optional<Double> price;
-    GeoPosition position;
+    double longitude;
+    double latitude;
     Category category;
     String userId;
     ListingStatus status;

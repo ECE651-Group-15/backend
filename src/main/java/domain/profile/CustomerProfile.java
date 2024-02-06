@@ -1,6 +1,5 @@
 package domain.profile;
 
-import domain.GeoPosition;
 import domain.listing.ListingDetails;
 import lombok.Data;
 
@@ -12,6 +11,7 @@ public class CustomerProfile {
     String name;
     Optional<String> email;
     Optional<String> phone;
-    Optional<GeoPosition> position;
+    Optional<Double> longitude;
+    Optional<Double> latitude;
     ListingDetails[] savedListings;
 }
