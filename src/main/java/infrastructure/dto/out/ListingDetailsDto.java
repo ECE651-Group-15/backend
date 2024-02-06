@@ -1,14 +1,17 @@
 package infrastructure.dto.out;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import domain.listing.ListingDetails;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ListingDetailsDto {
     public final String id;
     public final String title;
@@ -21,8 +24,8 @@ public class ListingDetailsDto {
     public final String status;
     public final List<String> images;
     public final Integer starCount;
-    public final Long createdAt;
-    public final Long updatedAt;
+    public final Instant createdAt;
+    public final Instant updatedAt;
 
     public static ListingDetailsDto fromDomain(ListingDetails listingDetails) {
         return ListingDetailsDto.builder()
@@ -30,15 +33,15 @@ public class ListingDetailsDto {
                                 .title(listingDetails.getTitle())
                                 .description(listingDetails.getDescription())
                                 .price(listingDetails.getPrice())
+                                .longitude(listingDetails.getLongitude())
                                 .latitude(listingDetails.getLatitude())
-                                .latitude(listingDetails.getLongitude())
                                 .category(String.valueOf(listingDetails.getCategory()))
                                 .userId(listingDetails.getUserId())
                                 .status(String.valueOf(listingDetails.getStatus()))
                                 .images(listingDetails.getImages())
                                 .starCount(listingDetails.getStarCount())
-                                .createdAt(listingDetails.getCreatedAt().toEpochMilli())
-                                .updatedAt(listingDetails.getUpdatedAt().toEpochMilli())
+                                .createdAt(Instant.ofEpochMilli(listingDetails.getCreatedAt()))
+                                .updatedAt(Instant.ofEpochMilli(listingDetails.getUpdatedAt()))
                                 .build();
     }
 }

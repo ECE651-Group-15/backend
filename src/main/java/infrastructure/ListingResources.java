@@ -8,15 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 
 @ApplicationScoped
 @Path("/api/listings")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces("application/json")
 public class ListingResources {
 
     @Inject
-    public ListingService listingService;
+    ListingService listingService;
 
     @POST
     @Path("/create")

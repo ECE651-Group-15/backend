@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class ListingEntity {
     @Id
     private String id;
@@ -39,8 +41,8 @@ public class ListingEntity {
     private List<String> images;
 
     private int starCount;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private Long createdAt;
+    private Long updatedAt;
 
     public static ListingEntity fromDomain(ListingDetails listingDetails) {
         ListingEntity listingEntity = new ListingEntity();

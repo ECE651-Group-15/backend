@@ -4,25 +4,16 @@ package infrastructure.dto.in;
 import domain.listing.Category;
 import domain.listing.CreateListing;
 import domain.listing.ListingStatus;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@AllArgsConstructor
 @Builder
-public class CreateListingDto {
-    public final String title;
-    public final String description;
-    public final Optional<Double> price;
-    public final Double longitude;
-    public final Double latitude;
-    public final String category;
-    public final String userId;
-    public final String status;
-    public final List<String> images;
-
+public record CreateListingDto(String title, String description, Optional<Double> price,
+                               Double longitude, Double latitude, String category,
+                               String userId, String status, List<String> images) {
     public CreateListing toDomain() {
         return CreateListing.builder()
                             .title(title)
@@ -34,6 +25,8 @@ public class CreateListingDto {
                             .userId(userId)
                             .status(ListingStatus.valueOf(status))
                             .images(images)
+                            .createdAt(Instant.now().toEpochMilli())
+                            .updatedAt(Instant.now().toEpochMilli())
                             .build();
     }
 }

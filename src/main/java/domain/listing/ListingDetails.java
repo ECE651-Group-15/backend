@@ -21,6 +21,6 @@ public class ListingDetails {
     ListingStatus status;
     List<String> images;
     int starCount;
-    Instant createdAt;
-    Instant updatedAt;
+    long createdAt;
+    long updatedAt;
 }

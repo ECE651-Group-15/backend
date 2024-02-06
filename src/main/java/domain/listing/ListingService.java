@@ -1,13 +1,9 @@
 package domain.listing;
 
-import domain.listing.CreateListing;
-import domain.listing.ListingDetails;
-import domain.listing.UpdateListing;
 import infrastructure.sql.ListingRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.Base64;
 import java.util.UUID;
 
 @ApplicationScoped
