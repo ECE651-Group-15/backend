@@ -4,6 +4,8 @@ import infrastructure.sql.ListingRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -32,6 +34,11 @@ public class ListingService {
         return listingDetails;
     }
 
+    public ListingDetails getListing(String listingId) {
+        return listingRepository.getListing(listingId)
+                                .orElseThrow(() -> new RuntimeException("Listing not found"));
+    }
+
     public ListingDetails updateListing(UpdateListing updateListing) {
         return null;
     }
@@ -40,9 +47,7 @@ public class ListingService {
         return null;
     }
 
-    public String getListing(String listingId) {
-        return "hello";
-    }
+
 
     public ListingDetails[] getListings() {
         return null;

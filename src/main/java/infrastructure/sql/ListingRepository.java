@@ -8,6 +8,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @ApplicationScoped
 public class ListingRepository implements ListingRepositoryInterface, PanacheRepository<ListingEntity> {
@@ -22,8 +23,9 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         }
     }
 
-    public Optional<ListingDetails> findById(String id) {
-        return Optional.empty();
+    public Optional<ListingDetails> getListing(String listingId) {
+        return find("id", listingId).firstResultOptional()
+                                    .map(ListingEntity::toDomain);
     }
 
     public Optional<ListingDetails> delete(String id) {
