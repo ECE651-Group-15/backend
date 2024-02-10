@@ -1,6 +1,5 @@
 package domain.listing;
 
-import infrastructure.sql.ListingRepository;
 import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -13,7 +12,7 @@ import java.util.UUID;
 public class ListingService {
 
     @Inject
-    ListingRepository listingRepository;
+    ListingRepositoryInterface listingRepository;
 
     public ListingDetails createListing(CreateListing createListing) {
         ListingDetails listingDetails = ListingDetails.builder()

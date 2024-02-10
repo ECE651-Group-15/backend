@@ -3,16 +3,13 @@ package infrastructure.sql.entity;
 import domain.listing.Category;
 import domain.listing.ListingDetails;
 import domain.listing.ListingStatus;
-import io.quarkus.arc.All;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +61,7 @@ public class ListingEntity {
                                  listingDetails.getUpdatedAt());
     }
 
-    public static ListingEntity updateFromEntity(ListingEntity entity) {
+    public static void updateFromEntity(ListingEntity entity) {
         entity.setId(entity.getId());
         entity.setTitle(entity.getTitle());
         entity.setDescription(entity.getDescription());
@@ -78,7 +75,6 @@ public class ListingEntity {
         entity.setStarCount(entity.getStarCount());
         entity.setCreatedAt(entity.getCreatedAt());
         entity.setUpdatedAt(entity.getUpdatedAt());
-        return entity;
     }
 
     public ListingDetails toDomain() {

@@ -8,4 +8,6 @@ public interface ListingRepositoryInterface {
     Optional<ListingEntity> getListing(String id);
     void save(ListingDetails listing);
     Optional<ListingDetails> delete(ListingDetails listingDetails);
+
+    Optional<ListingDetails> updateListing(ListingDetails listing);
 }

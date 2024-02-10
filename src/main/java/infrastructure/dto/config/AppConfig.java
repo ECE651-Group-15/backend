@@ -6,7 +6,7 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueReques
 
 public class AppConfig {
     public static String getSecret(String secretName) {
-        try (SecretsManagerClient client = SecretsManagerClient.builder().region(Region.of("YourRegion")).build()) {
+        try (SecretsManagerClient client = SecretsManagerClient.builder().region(Region.of("us-east-2")).build()) {
             GetSecretValueRequest valueRequest = GetSecretValueRequest.builder().secretId(secretName).build();
             return client.getSecretValue(valueRequest).secretString();
         }
