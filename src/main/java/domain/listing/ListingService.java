@@ -1,6 +1,7 @@
 package domain.listing;
 
 import infrastructure.sql.ListingRepository;
+import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -34,13 +35,31 @@ public class ListingService {
         return listingDetails;
     }
 
-    public ListingDetails getListing(String listingId) {
-        return listingRepository.getListing(listingId)
-                                .orElseThrow(() -> new RuntimeException("Listing not found"));
+    public Optional<ListingDetails> getListing(String listingId) {
+        return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
     }
 
-    public ListingDetails updateListing(UpdateListing updateListing) {
-        return null;
+    public Optional<ListingDetails> updateListing(UpdateListing updateListing) {
+        Optional<ListingDetails> existingListing = getListing(updateListing.getId());
+        if (existingListing.isEmpty()) {
+            return Optional.empty();
+        }
+        else {
+            ListingDetails listingDetails = existingListing.get();
+            listingDetails = listingDetails.toBuilder()
+                                           .title(updateListing.getTitle())
+                                           .description(updateListing.getDescription())
+                                           .price(updateListing.getPrice())
+                                           .latitude(updateListing.getLatitude())
+                                           .longitude(updateListing.getLongitude())
+                                           .category(updateListing.getCategory())
+                                           .status(updateListing.getStatus())
+                                           .images(updateListing.getImages())
+                                           .starCount(updateListing.getStarCount())
+                                           .updatedAt(Instant.now().toEpochMilli())
+                                           .build();
+            return listingRepository.updateListing(listingDetails);
+        }
     }
 
     public ListingDetails deleteListing(String listingId) {

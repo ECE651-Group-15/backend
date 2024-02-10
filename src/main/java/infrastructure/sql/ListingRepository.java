@@ -8,14 +8,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @ApplicationScoped
 public class ListingRepository implements ListingRepositoryInterface, PanacheRepository<ListingEntity> {
+
     @Transactional
     public void save(ListingDetails listing) {
         ListingEntity listingEntity = ListingEntity.fromDomain(listing);
-        System.out.println(listingEntity);
         try {
             persist(listingEntity);
         } catch (Exception e) {
@@ -23,9 +22,21 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         }
     }
 
-    public Optional<ListingDetails> getListing(String listingId) {
-        return find("id", listingId).firstResultOptional()
-                                    .map(ListingEntity::toDomain);
+    public Optional<ListingEntity> getListing(String listingId) {
+        return find("id", listingId).firstResultOptional();
+    }
+
+    @Transactional
+    public Optional<ListingDetails> updateListing(ListingDetails listing) {
+        Optional<ListingEntity> listingEntity = getListing(listing.getId());
+
+        if (listingEntity.isEmpty()) {
+            return Optional.empty();
+        } else {
+            ListingEntity entity = listingEntity.get();
+            ListingEntity.updateFromEntity(entity);
+        }
+        return Optional.of(listing);
     }
 
     public Optional<ListingDetails> delete(String id) {

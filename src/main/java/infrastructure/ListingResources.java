@@ -11,6 +11,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 
+import java.util.Optional;
+
 @ApplicationScoped
 @Path("v1/api/listings")
 @Produces("application/json")
@@ -27,13 +29,17 @@ public class ListingResources {
 
     @POST
     @Path("/get-listing/{listingId}")
-    public ListingDetailsDto getListing(@PathParam("listingId") String listingId) {
-        return ListingDetailsDto.fromDomain(listingService.getListing(listingId));
+    public Optional<ListingDetailsDto> getListing(@PathParam("listingId") String listingId) {
+        return Optional.ofNullable(ListingDetailsDto.fromDomain(listingService.getListing(listingId)
+                                                                              .orElseThrow(() -> new RuntimeException(
+                                                                                      "Cannot find listing with id " + listingId + "."))));
     }
 
     @POST
     @Path("/update-listing")
-    public ListingDetailsDto updateListing(UpdateListingDto updateListingDto) {
-        return ListingDetailsDto.fromDomain(listingService.updateListing(updateListingDto.toDomain()));
+    public Optional<ListingDetailsDto> updateListing(UpdateListingDto updateListingDto) {
+        return Optional.ofNullable(ListingDetailsDto.fromDomain(listingService.updateListing(updateListingDto.toDomain())
+                                                                              .orElseThrow(() -> new RuntimeException(
+                                                                                      "Cannot update listing with id " + updateListingDto.id() + "."))));
     }
 }

@@ -3,7 +3,10 @@ package infrastructure.sql.entity;
 import domain.listing.Category;
 import domain.listing.ListingDetails;
 import domain.listing.ListingStatus;
+import io.quarkus.arc.All;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +20,7 @@ import java.util.Optional;
 @Table(name = "listing")
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 @ToString
 public class ListingEntity {
@@ -45,21 +49,36 @@ public class ListingEntity {
     private Long updatedAt;
 
     public static ListingEntity fromDomain(ListingDetails listingDetails) {
-        ListingEntity listingEntity = new ListingEntity();
-        listingEntity.setId(listingDetails.getId());
-        listingEntity.setTitle(listingDetails.getTitle());
-        listingEntity.setDescription(listingDetails.getDescription());
-        listingEntity.setPrice(listingDetails.getPrice().orElse(-1.0));
-        listingEntity.setLongitude(listingDetails.getLongitude());
-        listingEntity.setLatitude(listingDetails.getLatitude());
-        listingEntity.setCategory(listingDetails.getCategory());
-        listingEntity.setUserId(listingDetails.getUserId());
-        listingEntity.setStatus(listingDetails.getStatus());
-        listingEntity.setImages(listingDetails.getImages());
-        listingEntity.setStarCount(listingDetails.getStarCount());
-        listingEntity.setCreatedAt(listingDetails.getCreatedAt());
-        listingEntity.setUpdatedAt(listingDetails.getUpdatedAt());
-        return listingEntity;
+        return new ListingEntity(listingDetails.getId(),
+                                 listingDetails.getTitle(),
+                                 listingDetails.getDescription(),
+                                 listingDetails.getPrice().orElse(null),
+                                 listingDetails.getLongitude(),
+                                 listingDetails.getLatitude(),
+                                 listingDetails.getCategory(),
+                                 listingDetails.getUserId(),
+                                 listingDetails.getStatus(),
+                                 listingDetails.getImages(),
+                                 listingDetails.getStarCount(),
+                                 listingDetails.getCreatedAt(),
+                                 listingDetails.getUpdatedAt());
+    }
+
+    public static ListingEntity updateFromEntity(ListingEntity entity) {
+        entity.setId(entity.getId());
+        entity.setTitle(entity.getTitle());
+        entity.setDescription(entity.getDescription());
+        entity.setPrice(entity.getPrice());
+        entity.setLongitude(entity.getLongitude());
+        entity.setLatitude(entity.getLatitude());
+        entity.setCategory(entity.getCategory());
+        entity.setUserId(entity.getUserId());
+        entity.setStatus(entity.getStatus());
+        entity.setImages(entity.getImages());
+        entity.setStarCount(entity.getStarCount());
+        entity.setCreatedAt(entity.getCreatedAt());
+        entity.setUpdatedAt(entity.getUpdatedAt());
+        return entity;
     }
 
     public ListingDetails toDomain() {
