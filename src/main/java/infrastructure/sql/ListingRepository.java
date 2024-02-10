@@ -39,8 +39,15 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         return Optional.of(listing);
     }
 
-    public Optional<ListingDetails> delete(String id) {
-        return Optional.empty();
+    @Transactional
+    public Optional<ListingDetails> delete(ListingDetails listingDetails) {
+        ListingEntity listingEntity = ListingEntity.fromDomain(listingDetails);
+        try {
+            delete(listingEntity);
+        } catch (Exception e) {
+            throw new RuntimeException("Failure deleting listing from db", e);
+        }
+        return Optional.of(listingDetails);
     }
 
 }

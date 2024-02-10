@@ -7,5 +7,5 @@ import java.util.Optional;
 public interface ListingRepositoryInterface {
     Optional<ListingEntity> getListing(String id);
     void save(ListingDetails listing);
-    Optional<ListingDetails> delete(String id);
+    Optional<ListingDetails> delete(ListingDetails listingDetails);
 }

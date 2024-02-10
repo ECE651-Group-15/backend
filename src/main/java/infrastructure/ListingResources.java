@@ -42,4 +42,12 @@ public class ListingResources {
                                                                               .orElseThrow(() -> new RuntimeException(
                                                                                       "Cannot update listing with id " + updateListingDto.id() + "."))));
     }
+
+    @POST
+    @Path("/delete-listing/{listingId}")
+    public Optional<ListingDetailsDto> updateListing(@PathParam("listingId") String listingId) {
+        return Optional.ofNullable(ListingDetailsDto.fromDomain(listingService.deleteListing(listingId)
+                                                                              .orElseThrow(() -> new RuntimeException(
+                                                                                      "Cannot find listing with id " + listingId + "."))));
+    }
 }

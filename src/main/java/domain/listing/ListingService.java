@@ -62,8 +62,14 @@ public class ListingService {
         }
     }
 
-    public ListingDetails deleteListing(String listingId) {
-        return null;
+    public Optional<ListingDetails> deleteListing(String listingId) {
+        Optional<ListingDetails> existingListing = getListing(listingId);
+        if (existingListing.isEmpty()) {
+            return Optional.empty();
+        }
+        else {
+            return listingRepository.delete(existingListing.get());
+        }
     }
 
 
