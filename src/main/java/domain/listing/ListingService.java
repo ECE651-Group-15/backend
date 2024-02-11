@@ -17,17 +17,7 @@ public class ListingService {
     ListingRepository listingRepository;
 
     public ListingDetails createListing(CreateListing createListing) {
-        if (createListing.getUserId() == null || createListing.getUserId().trim().isEmpty()) {
-            throw new BadRequestException("User ID is required");
-        }
-        else if (createListing.getTitle() == null || createListing.getTitle().trim().isEmpty()){
-            throw new BadRequestException("Title is required");
-
-        }
-        else if (createListing.getDescription() == null || createListing.getDescription().trim().isEmpty()){
-            throw new BadRequestException("Description is required");
-        }
-
+        validateListing(createListing);
         ListingDetails listingDetails = ListingDetails.builder()
                                                       .id(UUID.randomUUID().toString())
                                                       .title(createListing.getTitle())
@@ -46,7 +36,15 @@ public class ListingService {
         listingRepository.save(listingDetails);
         return listingDetails;
     }
-
+    private void validateListing(CreateListing createListing) {
+        if (createListing.getUserId() == null || createListing.getUserId().trim().isEmpty()) {
+            throw new BadRequestException("User ID is required");
+        } else if (createListing.getTitle() == null || createListing.getTitle().trim().isEmpty()) {
+            throw new BadRequestException("Title is required");
+        } else if (createListing.getDescription() == null || createListing.getDescription().trim().isEmpty()) {
+            throw new BadRequestException("Description is required");
+        }
+    }
     public Optional<ListingDetails> getListing(String listingId) {
         return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
     }
