@@ -19,5 +19,5 @@ public class UpdateListing {
     String userId;
     ListingStatus status;
     List<String> images;
-    Integer starCount;
+    int starCount;
 }
