@@ -1,9 +1,9 @@
 package infrastructure;
 
 import domain.listing.ListingService;
-import infrastructure.dto.in.CreateListingDto;
-import infrastructure.dto.in.UpdateListingDto;
-import infrastructure.dto.out.ListingDetailsDto;
+import infrastructure.dto.in.listing.CreateListingDto;
+import infrastructure.dto.in.listing.UpdateListingDto;
+import infrastructure.dto.out.listing.ListingDetailsDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -45,7 +45,7 @@ public class ListingResources {
 
     @POST
     @Path("/delete-listing/{listingId}")
-    public Optional<ListingDetailsDto> updateListing(@PathParam("listingId") String listingId) {
+    public Optional<ListingDetailsDto> deleteListing(@PathParam("listingId") String listingId) {
         return Optional.ofNullable(ListingDetailsDto.fromDomain(listingService.deleteListing(listingId)
                                                                               .orElseThrow(() -> new RuntimeException(
                                                                                       "Cannot find listing with id " + listingId + "."))));

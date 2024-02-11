@@ -7,8 +7,7 @@ import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
-public class CustomerProfile {
-    String id;
+public class CreateCustomerProfile {
     String name;
     Optional<String> email;
     Optional<String> phone;

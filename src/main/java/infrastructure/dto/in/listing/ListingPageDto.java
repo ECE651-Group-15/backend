@@ -1,4 +1,4 @@
-package infrastructure.dto.in;
+package infrastructure.dto.in.listing;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

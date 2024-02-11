@@ -1,6 +1,5 @@
 package domain.listing;
 
-import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -12,7 +11,7 @@ import java.util.UUID;
 public class ListingService {
 
     @Inject
-    ListingRepositoryInterface listingRepository;
+    ListingRepository listingRepository;
 
     public ListingDetails createListing(CreateListing createListing) {
         ListingDetails listingDetails = ListingDetails.builder()
@@ -35,7 +34,7 @@ public class ListingService {
     }
 
     public Optional<ListingDetails> getListing(String listingId) {
-        return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
+        return listingRepository.getListing(listingId);
     }
 
     public Optional<ListingDetails> updateListing(UpdateListing updateListing) {
@@ -70,8 +69,6 @@ public class ListingService {
             return listingRepository.delete(existingListing.get());
         }
     }
-
-
 
     public ListingDetails[] getListings() {
         return null;
