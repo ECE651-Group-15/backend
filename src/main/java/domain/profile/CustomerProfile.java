@@ -1,11 +1,13 @@
 package domain.profile;
 
-import domain.listing.ListingDetails;
+
+import lombok.Builder;
 import lombok.Data;
 
-import java.util.Optional;
+import java.util.*;
 
 @Data
+@Builder(toBuilder = true)
 public class CustomerProfile {
     String id;
     String name;
@@ -13,5 +15,8 @@ public class CustomerProfile {
     Optional<String> phone;
     Optional<Double> longitude;
     Optional<Double> latitude;
-    ListingDetails[] savedListings;
+//    Optional<ListingDetails[]> savedListings;
+    // starred listing
+    Optional<List<String>> starredListingIds;
+
 }

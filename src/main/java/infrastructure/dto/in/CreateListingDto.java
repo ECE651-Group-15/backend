@@ -11,9 +11,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Builder
-public record CreateListingDto(String title, String description, Optional<Double> price,
-                               Double longitude, Double latitude, String category,
-                               String userId, String status, List<String> images) {
+public record CreateListingDto(String title,
+                               String description,
+                               Optional<Double> price,
+                               Double longitude,
+                               Double latitude,
+                               String category,
+                               String userId,
+                               String status,
+                               List<String> images) {
     public CreateListing toDomain() {
         return CreateListing.builder()
                             .title(title)

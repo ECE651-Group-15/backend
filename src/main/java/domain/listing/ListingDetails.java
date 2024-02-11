@@ -3,12 +3,12 @@ package domain.listing;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Instant;
+
 import java.util.List;
 import java.util.Optional;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class ListingDetails {
     String id;
     String title;
