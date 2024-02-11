@@ -3,7 +3,9 @@ package infrastructure.sql;
 import domain.listing.ListingDetails;
 import domain.listing.ListingRepositoryInterface;
 import infrastructure.sql.entity.ListingEntity;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -49,5 +51,10 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         }
         return Optional.of(listingDetails);
     }
+
+    public PanacheQuery<ListingEntity> findByUserId(String userId, Page page) {
+        return find("userId", userId).page(page);
+    }
+
 
 }

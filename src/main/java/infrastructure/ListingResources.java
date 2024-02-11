@@ -1,7 +1,10 @@
 package infrastructure;
 
+import domain.listing.ListingDetails;
+import domain.listing.ListingPage;
 import domain.listing.ListingService;
 import infrastructure.dto.in.CreateListingDto;
+import infrastructure.dto.in.StarredListingsDto;
 import infrastructure.dto.in.UpdateListingDto;
 import infrastructure.dto.out.ListingDetailsDto;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,7 +14,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 
+
+
 import java.util.Optional;
+
+
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 @Path("v1/api/listings")
@@ -50,4 +59,13 @@ public class ListingResources {
                                                                               .orElseThrow(() -> new RuntimeException(
                                                                                       "Cannot find listing with id " + listingId + "."))));
     }
+
+    //Get user starredlisting
+    @POST
+    @Path("/getMyStar")
+    public ListingPage getSavedListings(StarredListingsDto request) {
+        return listingService.getStarredListings(request.getUserId(), request.getPage(), request.getSize());
+    }
+
+
 }

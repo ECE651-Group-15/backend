@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+
+
+
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +61,8 @@ public class ListingEntity {
                                  listingDetails.getImages(),
                                  listingDetails.getStarCount(),
                                  listingDetails.getCreatedAt(),
-                                 listingDetails.getUpdatedAt());
+                                 listingDetails.getUpdatedAt()
+        );
     }
 
     public static void updateFromEntity(ListingEntity entity) {
