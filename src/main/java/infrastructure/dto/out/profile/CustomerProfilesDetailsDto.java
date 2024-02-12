@@ -7,7 +7,7 @@ import lombok.Builder;
 import java.util.Optional;
 
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record CustomerProfilesDetailsDto(String id,
                                          String name,
                                          Optional<String> email,

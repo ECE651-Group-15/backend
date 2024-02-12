@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record ListingDetailsDto(String id,
                                 String title,
                                 String description,
