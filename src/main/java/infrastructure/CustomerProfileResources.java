@@ -8,10 +8,7 @@ import infrastructure.dto.in.profile.UpdateCustomerProfileDto;
 import infrastructure.dto.out.profile.CustomerProfilesDetailsDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Optional;
@@ -48,7 +45,8 @@ public class CustomerProfileResources {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(
                     fetchedCustomerProfile.get())));
         } else {
-            response.setMessage(Optional.of("Cannot find customer with id " + customerId + "."));
+            //response.setMessage(Optional.of("Cannot find customer with id " + customerId + "."));
+            throw new BadRequestException("Cannot find customer with ID" + customerId + ".");
         }
 
         return Response.ok(response).build();
@@ -63,9 +61,11 @@ public class CustomerProfileResources {
                                                                              200,
                                                                              Optional.empty());
         if (updatedCustomerProfile.isEmpty()) {
-            response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
+            throw new BadRequestException("Cannot find listing with ID" + updateCustomerProfileDto.id() + ".");
+            //response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
         } else {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(updatedCustomerProfile.get())));
+
         }
         return Response.ok(response).build();
     }
@@ -79,7 +79,8 @@ public class CustomerProfileResources {
 
         Optional<CustomerProfile> deletedCustomerProfile = customerProfileService.deleteCustomerProfile(customerId);
         if (deletedCustomerProfile.isEmpty()) {
-            response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
+            //response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
+            throw new BadRequestException("Cannot delete customer profile with ID" + customerId + ", as it's not found.");
         } else {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deletedCustomerProfile.get())));
         }

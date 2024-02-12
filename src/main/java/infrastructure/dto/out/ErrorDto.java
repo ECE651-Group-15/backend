@@ -10,14 +10,16 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ErrorDto {
 
-    private String error;
     private String message;
+    private Integer code;
+    private Object data;
 
-    public ErrorDto(String message) {
-        this.error = "General Error";
+    public ErrorDto(String message, Integer code) {
         this.message = message;
+        this.code = code;
+        this.data = null;
     }
 
-    // Getters and setters
+
 
 }

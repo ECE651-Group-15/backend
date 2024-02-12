@@ -1,7 +1,9 @@
 package domain.profile;
 
+import domain.listing.CreateListing;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -12,6 +14,7 @@ public class CustomerProfileService {
     CustomerProfileRepository customerProfileRepository;
 
     public CustomerProfile createProfile(CreateCustomerProfile createCustomerProfile) {
+        validateProfile(createCustomerProfile);
         CustomerProfile customerProfile = CustomerProfile.builder()
                                                          .id(UUID.randomUUID().toString())
                                                          .name(createCustomerProfile.getName())
@@ -22,6 +25,11 @@ public class CustomerProfileService {
                                                          .build();
         customerProfileRepository.save(customerProfile);
         return customerProfile;
+    }
+    private void validateProfile(CreateCustomerProfile createCustomerProfile) {
+        if (createCustomerProfile.getName() == null || createCustomerProfile.getName().trim().isEmpty()) {
+            throw new BadRequestException("Name is required for a profile");
+        }
     }
 
     public Optional<CustomerProfile> getCustomerProfile(String profileId) {
