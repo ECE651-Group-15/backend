@@ -1,11 +1,10 @@
 package domain.listing;
 
-import infrastructure.sql.entity.ListingEntity;
-
 import java.util.Optional;
 
-public interface ListingRepositoryInterface {
-    Optional<ListingEntity> getListing(String id);
+public interface ListingRepository {
     void save(ListingDetails listing);
+    Optional<ListingDetails> getListing(String id);
+    Optional<ListingDetails> updateListing(ListingDetails listing);
     Optional<ListingDetails> delete(ListingDetails listingDetails);
 }

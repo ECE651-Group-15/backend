@@ -1,7 +1,7 @@
 package infrastructure.sql;
 
 import domain.listing.ListingDetails;
-import domain.listing.ListingRepositoryInterface;
+import domain.listing.ListingRepository;
 import infrastructure.sql.entity.ListingEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -10,8 +10,9 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 
 @ApplicationScoped
-public class ListingRepository implements ListingRepositoryInterface, PanacheRepository<ListingEntity> {
+public class PanacheListingRepository implements ListingRepository, PanacheRepository<ListingEntity> {
 
+    @Override
     @Transactional
     public void save(ListingDetails listing) {
         ListingEntity listingEntity = ListingEntity.fromDomain(listing);
@@ -22,13 +23,15 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         }
     }
 
-    public Optional<ListingEntity> getListing(String listingId) {
-        return find("id", listingId).firstResultOptional();
+    @Override
+    public Optional<ListingDetails> getListing(String listingId) {
+        return find("id", listingId).firstResultOptional().map(ListingEntity::toDomain);
     }
 
+    @Override
     @Transactional
     public Optional<ListingDetails> updateListing(ListingDetails listing) {
-        Optional<ListingEntity> listingEntity = getListing(listing.getId());
+        Optional<ListingEntity> listingEntity = findListingById(listing.getId());
 
         if (listingEntity.isEmpty()) {
             return Optional.empty();
@@ -39,6 +42,7 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         return Optional.of(listing);
     }
 
+    @Override
     @Transactional
     public Optional<ListingDetails> delete(ListingDetails listingDetails) {
         ListingEntity listingEntity = ListingEntity.fromDomain(listingDetails);
@@ -50,4 +54,7 @@ public class ListingRepository implements ListingRepositoryInterface, PanacheRep
         return Optional.of(listingDetails);
     }
 
+    private Optional<ListingEntity> findListingById(String listingId) {
+        return find("id", listingId).firstResultOptional();
+    }
 }

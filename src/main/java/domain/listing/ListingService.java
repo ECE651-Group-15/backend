@@ -1,7 +1,5 @@
 package domain.listing;
 
-import infrastructure.sql.ListingRepository;
-import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -46,7 +44,7 @@ public class ListingService {
         }
     }
     public Optional<ListingDetails> getListing(String listingId) {
-        return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
+        return listingRepository.getListing(listingId);
     }
 
     public Optional<ListingDetails> updateListing(UpdateListing updateListing) {
@@ -81,8 +79,6 @@ public class ListingService {
             return listingRepository.delete(existingListing.get());
         }
     }
-
-
 
     public ListingDetails[] getListings() {
         return null;

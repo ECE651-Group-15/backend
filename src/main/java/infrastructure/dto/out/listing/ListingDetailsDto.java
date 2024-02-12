@@ -1,32 +1,28 @@
-package infrastructure.dto.out;
+package infrastructure.dto.out.listing;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import domain.listing.ListingDetails;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ListingDetailsDto {
-    public final String id;
-    public final String title;
-    public final String description;
-    public final Optional<Double> price;
-    public final Double longitude;
-    public final Double latitude;
-    public final String category;
-    public final String userId;
-    public final String status;
-    public final List<String> images;
-    public final Integer starCount;
-    public final Instant createdAt;
-    public final Instant updatedAt;
-
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public record ListingDetailsDto(String id,
+                                String title,
+                                String description,
+                                Optional<Double> price,
+                                Double longitude,
+                                Double latitude,
+                                String category,
+                                String userId,
+                                String status,
+                                List<String> images,
+                                Integer starCount,
+                                Instant createdAt,
+                                Instant updatedAt) {
     public static ListingDetailsDto fromDomain(ListingDetails listingDetails) {
         return ListingDetailsDto.builder()
                                 .id(listingDetails.getId())
