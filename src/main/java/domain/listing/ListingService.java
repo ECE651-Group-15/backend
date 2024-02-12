@@ -86,27 +86,38 @@ public class ListingService {
         return null;
     }
 
-    //Get StarredListingIds ID to retrieve post details
+
+
+
+
     public ListingPage getStarredListingIds(String userId, int pageIndex, int pageSize) {
-        // find ProfileEntity，if does not exist return exception
+        // findProfileEntity, if do not exist return exception
         ProfileEntity customerProfile = customerProfileRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User ID not found"));
 
-        // get page
-        List<ListingDetails> starredListings = customerProfile.getStarredListingIds().stream()
-                .skip((long) pageIndex * pageSize) // skip current page
-                .limit(pageSize) // limit current page size
-                .map(listingId -> listingRepository.getListing(listingId))
+        // get allStarredIds
+        List<String> allStarredIds = customerProfile.getStarredListingIds();
+
+        // calculate totalpages
+        int totalItems = allStarredIds.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+
+
+        List<ListingDetails> starredListings = allStarredIds.stream()
+                .map(listingRepository::getListing)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(ListingEntity::toDomain)
                 .collect(Collectors.toList());
+
 
         // create ListingPage
         ListingPage listingPage = new ListingPage();
         listingPage.setListings(starredListings);
         listingPage.setPageIndex(pageIndex);
         listingPage.setPageSize(pageSize);
+        listingPage.setTotalPages(totalPages);
 
         return listingPage;
     }
@@ -120,7 +131,7 @@ public class ListingService {
 
 
     //Retrieve paginated query results of posts based on the incoming user and page number
-    public ListingPage getStarredListings(String userId, int pageIndex, int pageSize) {
+    public ListingPage getotherListings(String userId, int pageIndex, int pageSize) {
         Page page = Page.of(pageIndex, pageSize);
         PanacheQuery<ListingEntity> listings = listingRepository.findByUserId(userId, page);
         List<ListingDetails> listingDetails = listings.list().stream()
