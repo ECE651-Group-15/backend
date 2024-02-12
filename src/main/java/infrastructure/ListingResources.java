@@ -64,7 +64,8 @@ public class ListingResources {
     @POST
     @Path("/getMyStar")
     public ListingPage getSavedListings(StarredListingsDto request) {
-        return listingService.getStarredListings(request.getUserId(), request.getPage(), request.getSize());
+//        return listingService.getStarredListings(request.getUserId(), request.getPage(), request.getSize());
+        return listingService.getStarredListingIds(request.getUserId(), request.getPage(), request.getSize());
     }
 
 

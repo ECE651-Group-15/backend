@@ -87,24 +87,38 @@ public class ListingService {
     }
 
     //Get StarredListingIds ID to retrieve post details
-    public Optional<ListingDetails[]> getStarredListingIds(String userId) {
-        Optional<ProfileEntity> customerProfileOpt = customerProfileRepository.findById
-                (userId);
+    public ListingPage getStarredListingIds(String userId, int pageIndex, int pageSize) {
+        // find ProfileEntity，if does not exist return exception
+        ProfileEntity customerProfile = customerProfileRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User ID not found"));
 
-        if (!customerProfileOpt.isPresent()) {
-            return Optional.empty();
-        }
-        ProfileEntity customerProfile = customerProfileOpt.get();
-
+        // get page
         List<ListingDetails> starredListings = customerProfile.getStarredListingIds().stream()
+                .skip((long) pageIndex * pageSize) // skip current page
+                .limit(pageSize) // limit current page size
                 .map(listingId -> listingRepository.getListing(listingId))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(ListingEntity::toDomain)
                 .collect(Collectors.toList());
 
-        return Optional.of(starredListings.toArray(new ListingDetails[0]));
+        // create ListingPage
+        ListingPage listingPage = new ListingPage();
+        listingPage.setListings(starredListings);
+        listingPage.setPageIndex(pageIndex);
+        listingPage.setPageSize(pageSize);
+
+        return listingPage;
     }
+
+
+
+
+
+
+
+
+
     //Retrieve paginated query results of posts based on the incoming user and page number
     public ListingPage getStarredListings(String userId, int pageIndex, int pageSize) {
         Page page = Page.of(pageIndex, pageSize);
