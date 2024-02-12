@@ -1,27 +1,16 @@
 package domain.listing;
 
-import domain.profile.CustomerProfileRepositoryInterface;
-import infrastructure.sql.entity.ListingEntity;
-import infrastructure.sql.entity.ProfileEntity;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
-import io.quarkus.panache.common.Page;
+import infrastructure.sql.ListingRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import java.util.UUID;
 
 @ApplicationScoped
 public class ListingService {
 
     @Inject
-    ListingRepositoryInterface listingRepository;
-    @Inject
-    CustomerProfileRepositoryInterface customerProfileRepository;
+    ListingRepository listingRepository;
 
     public ListingDetails createListing(CreateListing createListing) {
         ListingDetails listingDetails = ListingDetails.builder()
@@ -43,84 +32,19 @@ public class ListingService {
         return listingDetails;
     }
 
-    public Optional<ListingDetails> getListing(String listingId) {
-        return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
+    public ListingDetails updateListing(UpdateListing updateListing) {
+        return null;
     }
 
-    public Optional<ListingDetails> updateListing(UpdateListing updateListing) {
-        Optional<ListingDetails> existingListing = getListing(updateListing.getId());
-        if (existingListing.isEmpty()) {
-            return Optional.empty();
-        }
-        else {
-            ListingDetails listingDetails = existingListing.get();
-            listingDetails = listingDetails.toBuilder()
-                                           .title(updateListing.getTitle())
-                                           .description(updateListing.getDescription())
-                                           .price(updateListing.getPrice())
-                                           .latitude(updateListing.getLatitude())
-                                           .longitude(updateListing.getLongitude())
-                                           .category(updateListing.getCategory())
-                                           .status(updateListing.getStatus())
-                                           .images(updateListing.getImages())
-                                           .starCount(updateListing.getStarCount())
-                                           .updatedAt(Instant.now().toEpochMilli())
-                                           .build();
-            return listingRepository.updateListing(listingDetails);
-        }
+    public ListingDetails deleteListing(String listingId) {
+        return null;
     }
 
-    public Optional<ListingDetails> deleteListing(String listingId) {
-        Optional<ListingDetails> existingListing = getListing(listingId);
-        if (existingListing.isEmpty()) {
-            return Optional.empty();
-        }
-        else {
-            return listingRepository.delete(existingListing.get());
-        }
+    public String getListing(String listingId) {
+        return "hello";
     }
-
-
 
     public ListingDetails[] getListings() {
         return null;
     }
-
-    //Get StarredListingIds ID to retrieve post details
-    public Optional<ListingDetails[]> getStarredListingIds(String userId) {
-        Optional<ProfileEntity> customerProfileOpt = customerProfileRepository.findById
-                (userId);
-
-        if (!customerProfileOpt.isPresent()) {
-            return Optional.empty();
-        }
-        ProfileEntity customerProfile = customerProfileOpt.get();
-
-        List<ListingDetails> starredListings = customerProfile.getStarredListingIds().stream()
-                .map(listingId -> listingRepository.getListing(listingId))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(ListingEntity::toDomain)
-                .collect(Collectors.toList());
-
-        return Optional.of(starredListings.toArray(new ListingDetails[0]));
-    }
-    //Retrieve paginated query results of posts based on the incoming user and page number
-    public ListingPage getStarredListings(String userId, int pageIndex, int pageSize) {
-        Page page = Page.of(pageIndex, pageSize);
-        PanacheQuery<ListingEntity> listings = listingRepository.findByUserId(userId, page);
-        List<ListingDetails> listingDetails = listings.list().stream()
-                .map(ListingEntity::toDomain)
-                .collect(Collectors.toList());
-
-        ListingPage listingPage = new ListingPage();
-        listingPage.setListings(listingDetails);
-        listingPage.setPageIndex(pageIndex);
-        listingPage.setPageSize(pageSize);
-        listingPage.setTotalPages(listings.pageCount());
-
-        return listingPage;
-    }
-
 }
-

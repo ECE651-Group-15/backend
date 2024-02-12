@@ -2,14 +2,10 @@ package domain.listing;
 
 import lombok.Data;
 
-import java.util.List;
-
+import java.util.Optional;
 
 @Data
 public class ListingPage {
-    private List<ListingDetails> listings; // list of listing
-    private Integer pageIndex; // current page
-    private Integer pageSize; //
-    private Integer totalPages; //
-
+    public Integer page;
+    public Optional<Integer> pageSize;
 }
