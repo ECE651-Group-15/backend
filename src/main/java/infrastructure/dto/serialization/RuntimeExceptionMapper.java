@@ -1,5 +1,5 @@
 package infrastructure.dto.serialization;
-import com.fasterxml.jackson.databind.JsonMappingException;
+
 
 import infrastructure.dto.ApiResponse;
 import infrastructure.dto.out.listing.ListingDetailsDto;
@@ -11,15 +11,15 @@ import jakarta.ws.rs.ext.Provider;
 import java.util.Optional;
 
 @Provider
-public class DeserializationErrorMapper implements ExceptionMapper<JsonMappingException> {
+public class RuntimeExceptionMapper implements ExceptionMapper<RuntimeException> {
     @Override
-    public Response toResponse(JsonMappingException e) {
-        String message = "Error processing JSON data. Please check the request payload.";
+    public Response toResponse(RuntimeException e) {
+        String message = e.getMessage();
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.of(message),
-                400,
+                500,
                 Optional.empty());
 
-        return Response.status(Response.Status.BAD_REQUEST)
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(response)
                 .type(MediaType.APPLICATION_JSON)
                 .build();
