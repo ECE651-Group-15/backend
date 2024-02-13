@@ -45,8 +45,9 @@ public class CustomerProfileResources {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(
                     fetchedCustomerProfile.get())));
         } else {
-            //response.setMessage(Optional.of("Cannot find customer with id " + customerId + "."));
-            throw new BadRequestException("Cannot find customer with ID" + customerId + ".");
+            response.setMessage(Optional.of("Cannot find customer with id " + customerId + "."));
+            response.setCode(4001);
+            //throw new BadRequestException("Cannot find customer with ID" + customerId + ".");
         }
 
         return Response.ok(response).build();
@@ -61,8 +62,9 @@ public class CustomerProfileResources {
                                                                              200,
                                                                              Optional.empty());
         if (updatedCustomerProfile.isEmpty()) {
-            throw new BadRequestException("Cannot find listing with ID" + updateCustomerProfileDto.id() + ".");
-            //response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
+            //throw new BadRequestException("Cannot find listing with ID" + updateCustomerProfileDto.id() + ".");
+            response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
+            response.setCode(4001);
         } else {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(updatedCustomerProfile.get())));
 
@@ -79,8 +81,9 @@ public class CustomerProfileResources {
 
         Optional<CustomerProfile> deletedCustomerProfile = customerProfileService.deleteCustomerProfile(customerId);
         if (deletedCustomerProfile.isEmpty()) {
-            //response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
-            throw new BadRequestException("Cannot delete customer profile with ID" + customerId + ", as it's not found.");
+            response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
+            //throw new BadRequestException("Cannot delete customer profile with ID" + customerId + ", as it's not found.");
+            response.setCode(4001);
         } else {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deletedCustomerProfile.get())));
         }

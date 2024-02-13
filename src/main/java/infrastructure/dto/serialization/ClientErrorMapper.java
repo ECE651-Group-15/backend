@@ -1,22 +1,30 @@
 package infrastructure.dto.serialization;
 
 
+import infrastructure.dto.ApiResponse;
 import infrastructure.dto.out.ErrorDto;
 import infrastructure.dto.out.NestedErrorDto;
+import infrastructure.dto.out.listing.ListingDetailsDto;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import java.util.Optional;
+
 @Provider
 public class ClientErrorMapper implements ExceptionMapper<BadRequestException> {
     @Override
     public Response toResponse(BadRequestException e) {
-        ErrorDto innerError = new ErrorDto(e.getMessage(), 4001);
-        NestedErrorDto nestedError = new NestedErrorDto(200, innerError);
-        return Response.status(Response.Status.OK)
-                .entity(nestedError)
+        String message = e.getMessage();
+        ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.of(message),
+                4001,
+                Optional.empty());
+
+
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(response)
                 .type(MediaType.APPLICATION_JSON)
                 .build();
     }

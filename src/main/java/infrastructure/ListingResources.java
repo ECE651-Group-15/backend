@@ -41,8 +41,9 @@ public class ListingResources {
         if (fetchedListing.isPresent()) {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(fetchedListing.get())));
         } else {
-            //response.setMessage(Optional.of("Cannot find listing with id " + listingId + "."));
-            throw new BadRequestException("Cannot find listing with ID:" + listingId);
+            response.setMessage(Optional.of("Cannot find listing with id " + listingId + "."));
+            response.setCode(4001);
+            //throw new BadRequestException("Cannot find listing with ID:" + listingId);
         }
 
         return Response.ok(response).build();
@@ -58,8 +59,9 @@ public class ListingResources {
         if (updatedListing.isPresent()) {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(updatedListing.get())));
         } else {
-            //response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
-            throw new BadRequestException("Cannot update listing with ID: " + updateListingDto.id() + ", as listing was not found with given ID.");
+            response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
+            response.setCode(4001);
+            //throw new BadRequestException("Cannot update listing with ID: " + updateListingDto.id() + ", as listing was not found with given ID.");
         }
         return Response.ok(response).build();
     }
@@ -74,8 +76,9 @@ public class ListingResources {
         if (deletedListing.isPresent()) {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(deletedListing.get())));
         } else {
-            //response.setMessage(Optional.of("Cannot delete listing with id " + listingId + " as listing was not found with given ID."));
-            throw new BadRequestException("Cannot delete listing with ID: " + listingId + ", as listing was not found with given ID.");
+            response.setMessage(Optional.of("Cannot delete listing with id " + listingId + " as listing was not found with given ID."));
+            response.setCode(4001);
+            //throw new BadRequestException("Cannot delete listing with ID: " + listingId + ", as listing was not found with given ID.");
         }
         return Response.ok(response).build();
     }
