@@ -2,8 +2,6 @@ package infrastructure.dto.serialization;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import infrastructure.dto.ApiResponse;
-import infrastructure.dto.out.ErrorDto;
-import infrastructure.dto.out.NestedErrorDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

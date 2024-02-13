@@ -2,8 +2,6 @@ package infrastructure.dto.serialization;
 
 
 import infrastructure.dto.ApiResponse;
-import infrastructure.dto.out.ErrorDto;
-import infrastructure.dto.out.NestedErrorDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
