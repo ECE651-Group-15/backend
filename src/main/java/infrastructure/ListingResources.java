@@ -8,7 +8,10 @@ import infrastructure.dto.in.listing.UpdateListingDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Optional;
@@ -24,10 +27,17 @@ public class ListingResources {
     @POST
     @Path("/create-listing")
     public Response createListing(CreateListingDto createListingDto) {
-        ListingDetails createdListing = listingService.createListing(createListingDto.toDomain());
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
                                                                     200,
-                                                                    Optional.of(ListingDetailsDto.fromDomain(createdListing)));
+                                                                    Optional.empty());
+        Optional<ListingDetails> createdListing = listingService.createListing(createListingDto.toDomain());
+        if (createdListing.isEmpty()) {
+            response.setMessage(Optional.of("Cannot find create listing with customer id: " + createListingDto.userId() + "."));
+            response.setCode(4001);
+        }
+        else{
+            response.setData(Optional.of(ListingDetailsDto.fromDomain(createdListing.get())));
+        }
         return Response.ok(response).build();
     }
 
@@ -43,7 +53,6 @@ public class ListingResources {
         } else {
             response.setMessage(Optional.of("Cannot find listing with id " + listingId + "."));
             response.setCode(4001);
-            //throw new BadRequestException("Cannot find listing with ID:" + listingId);
         }
 
         return Response.ok(response).build();
@@ -61,7 +70,6 @@ public class ListingResources {
         } else {
             response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
             response.setCode(4001);
-            //throw new BadRequestException("Cannot update listing with ID: " + updateListingDto.id() + ", as listing was not found with given ID.");
         }
         return Response.ok(response).build();
     }
@@ -78,7 +86,6 @@ public class ListingResources {
         } else {
             response.setMessage(Optional.of("Cannot delete listing with id " + listingId + " as listing was not found with given ID."));
             response.setCode(4001);
-            //throw new BadRequestException("Cannot delete listing with ID: " + listingId + ", as listing was not found with given ID.");
         }
         return Response.ok(response).build();
     }

@@ -1,6 +1,5 @@
 package infrastructure.sql;
 
-import domain.profile.CustomerProfile;
 import domain.profile.CustomerProfileRepository;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -14,8 +13,7 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
 
     @Override
     @Transactional
-    public void save(CustomerProfile customerProfile) {
-        CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.fromDomain(customerProfile);
+    public void save(CustomerProfileEntity customerProfileEntity) {
         try {
             persist(customerProfileEntity);
         } catch (Exception e) {
@@ -24,38 +22,25 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
     }
 
     @Override
-    public Optional<CustomerProfile> getCustomerProfile(String customerId) {
-        return find("id", customerId).firstResultOptional().map(CustomerProfileEntity::toDomain);
-    }
-
-
-    @Override
-    @Transactional
-    public Optional<CustomerProfile> updateCustomerProfile(CustomerProfile customerProfile) {
-        Optional<CustomerProfileEntity> customerProfileEntity = findCustomerProfileById(customerProfile.getId());
-
-        if (customerProfileEntity.isEmpty()) {
-            return Optional.empty();
-        } else {
-            CustomerProfileEntity entity = customerProfileEntity.get();
-            CustomerProfileEntity.updateFromEntity(entity);
-        }
-        return Optional.of(customerProfile);
+    public Optional<CustomerProfileEntity> getCustomerProfile(String customerId) {
+        return find("id", customerId).firstResultOptional();
     }
 
     @Override
     @Transactional
-    public Optional<CustomerProfile> deleteCustomerProfile(CustomerProfile customerProfile) {
-        CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.fromDomain(customerProfile);
+    public Optional<CustomerProfileEntity> updateCustomerProfile(CustomerProfileEntity customerProfileEntity) {
+        CustomerProfileEntity.updateFromEntity(customerProfileEntity);
+        return Optional.of(customerProfileEntity);
+    }
+
+    @Override
+    @Transactional
+    public Optional<CustomerProfileEntity> deleteCustomerProfile(CustomerProfileEntity customerProfileEntity) {
         try {
             delete(customerProfileEntity);
         } catch (Exception e) {
             throw new RuntimeException("Failure deleting listing from db", e);
         }
-        return Optional.of(customerProfile);
-    }
-
-    private Optional<CustomerProfileEntity> findCustomerProfileById(String customerId) {
-        return find("id", customerId).firstResultOptional();
+        return Optional.of(customerProfileEntity);
     }
 }

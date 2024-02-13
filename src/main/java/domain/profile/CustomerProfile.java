@@ -3,6 +3,7 @@ package domain.profile;
 import lombok.Builder;
 import lombok.Value;
 
+import java.util.List;
 import java.util.Optional;
 
 @Value
@@ -14,4 +15,6 @@ public class CustomerProfile {
     Optional<String> phone;
     Optional<Double> longitude;
     Optional<Double> latitude;
+    Optional<List<String>> postedListingIds;
+    Optional<List<String>> starredListingIds;
 }

@@ -1,6 +1,5 @@
 package infrastructure.sql;
 
-import domain.listing.ListingDetails;
 import domain.listing.ListingRepository;
 import infrastructure.sql.entity.ListingEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -14,8 +13,7 @@ public class PanacheListingRepository implements ListingRepository, PanacheRepos
 
     @Override
     @Transactional
-    public void save(ListingDetails listing) {
-        ListingEntity listingEntity = ListingEntity.fromDomain(listing);
+    public void save(ListingEntity listingEntity) {
         try {
             persist(listingEntity);
         } catch (Exception e) {
@@ -24,37 +22,25 @@ public class PanacheListingRepository implements ListingRepository, PanacheRepos
     }
 
     @Override
-    public Optional<ListingDetails> getListing(String listingId) {
-        return find("id", listingId).firstResultOptional().map(ListingEntity::toDomain);
+    public Optional<ListingEntity> getListing(String listingId) {
+        return find("id", listingId).firstResultOptional();
     }
 
     @Override
     @Transactional
-    public Optional<ListingDetails> updateListing(ListingDetails listing) {
-        Optional<ListingEntity> listingEntity = findListingById(listing.getId());
-
-        if (listingEntity.isEmpty()) {
-            return Optional.empty();
-        } else {
-            ListingEntity entity = listingEntity.get();
-            ListingEntity.updateFromEntity(entity);
-        }
-        return Optional.of(listing);
+    public Optional<ListingEntity> updateListing(ListingEntity listingEntity) {
+        ListingEntity.updateFromEntity(listingEntity);
+        return Optional.of(listingEntity);
     }
 
     @Override
     @Transactional
-    public Optional<ListingDetails> delete(ListingDetails listingDetails) {
-        ListingEntity listingEntity = ListingEntity.fromDomain(listingDetails);
+    public Optional<ListingEntity> deleteListing(ListingEntity listingEntity) {
         try {
             delete(listingEntity);
         } catch (Exception e) {
             throw new RuntimeException("Failure deleting listing from db", e);
         }
-        return Optional.of(listingDetails);
-    }
-
-    private Optional<ListingEntity> findListingById(String listingId) {
-        return find("id", listingId).firstResultOptional();
+        return Optional.of(listingEntity);
     }
 }

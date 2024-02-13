@@ -19,5 +19,4 @@ public class UpdateListing {
     String userId;
     ListingStatus status;
     List<String> images;
-    int starCount;
 }

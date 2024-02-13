@@ -33,7 +33,10 @@ public class ListingEntity {
 
     @Enumerated(EnumType.STRING)
     private Category category;
-    private String userId;
+
+    @ManyToOne
+    @JoinColumn(name = "customer_profile_id")
+    private CustomerProfileEntity customerProfile;
 
     @Enumerated(EnumType.STRING)
     private ListingStatus status;
@@ -41,24 +44,33 @@ public class ListingEntity {
     @ElementCollection
     private List<String> images;
 
-    private int starCount;
+    @ManyToMany
+    @JoinTable(
+            name = "listing_starred_by_customers",
+            joinColumns = @JoinColumn(name = "listing_id"),
+            inverseJoinColumns = @JoinColumn(name = "customer_profile_id")
+    )
+    private List<CustomerProfileEntity> customersWhoStarred;
+
     private Long createdAt;
     private Long updatedAt;
 
-    public static ListingEntity fromDomain(ListingDetails listingDetails) {
-        return new ListingEntity(listingDetails.getId(),
-                                 listingDetails.getTitle(),
-                                 listingDetails.getDescription(),
-                                 listingDetails.getPrice().orElse(null),
-                                 listingDetails.getLongitude(),
-                                 listingDetails.getLatitude(),
-                                 listingDetails.getCategory(),
-                                 listingDetails.getUserId(),
-                                 listingDetails.getStatus(),
-                                 listingDetails.getImages(),
-                                 listingDetails.getStarCount(),
-                                 listingDetails.getCreatedAt(),
-                                 listingDetails.getUpdatedAt());
+    public static ListingEntity fromDomain(ListingDetails listingDetails,
+                                           CustomerProfileEntity ownerProfile) {
+        ListingEntity entity = new ListingEntity();
+        entity.setId(listingDetails.getId());
+        entity.setTitle(listingDetails.getTitle());
+        entity.setDescription(listingDetails.getDescription());
+        entity.setPrice(listingDetails.getPrice().orElse(null));
+        entity.setLongitude(listingDetails.getLongitude());
+        entity.setLatitude(listingDetails.getLatitude());
+        entity.setCategory(listingDetails.getCategory());
+        entity.setCustomerProfile(ownerProfile);
+        entity.setStatus(listingDetails.getStatus());
+        entity.setImages(listingDetails.getImages());
+        entity.setCreatedAt(listingDetails.getCreatedAt());
+        entity.setUpdatedAt(listingDetails.getUpdatedAt());
+        return entity;
     }
 
     public static void updateFromEntity(ListingEntity entity) {
@@ -69,10 +81,8 @@ public class ListingEntity {
         entity.setLongitude(entity.getLongitude());
         entity.setLatitude(entity.getLatitude());
         entity.setCategory(entity.getCategory());
-        entity.setUserId(entity.getUserId());
         entity.setStatus(entity.getStatus());
         entity.setImages(entity.getImages());
-        entity.setStarCount(entity.getStarCount());
         entity.setCreatedAt(entity.getCreatedAt());
         entity.setUpdatedAt(entity.getUpdatedAt());
     }
@@ -82,16 +92,16 @@ public class ListingEntity {
                              .id(this.id)
                              .title(this.title)
                              .description(this.description)
-                             .price(Optional.of(this.price))
+                             .price(Optional.ofNullable(this.price))
                              .longitude(this.longitude)
                              .latitude(this.latitude)
                              .category(this.category)
-                             .userId(this.userId)
+                             .userId(this.customerProfile != null ? this.customerProfile.getId() : null)
                              .status(this.status)
                              .images(this.images)
-                             .starCount(this.starCount)
                              .createdAt(this.createdAt)
                              .updatedAt(this.updatedAt)
                              .build();
     }
+
 }

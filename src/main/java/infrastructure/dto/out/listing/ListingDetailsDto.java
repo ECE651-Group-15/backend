@@ -20,7 +20,6 @@ public record ListingDetailsDto(String id,
                                 String userId,
                                 String status,
                                 List<String> images,
-                                Integer starCount,
                                 Instant createdAt,
                                 Instant updatedAt) {
     public static ListingDetailsDto fromDomain(ListingDetails listingDetails) {
@@ -35,7 +34,6 @@ public record ListingDetailsDto(String id,
                                 .userId(listingDetails.getUserId())
                                 .status(String.valueOf(listingDetails.getStatus()))
                                 .images(listingDetails.getImages())
-                                .starCount(listingDetails.getStarCount())
                                 .createdAt(Instant.ofEpochMilli(listingDetails.getCreatedAt()))
                                 .updatedAt(Instant.ofEpochMilli(listingDetails.getUpdatedAt()))
                                 .build();
