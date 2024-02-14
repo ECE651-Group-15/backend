@@ -17,7 +17,7 @@ public record CreateListingDto(String title,
                                Double longitude,
                                Double latitude,
                                String category,
-                               String userId,
+                               String customerId,
                                String status,
                                List<String> images) {
     public CreateListing toDomain() {
@@ -28,7 +28,7 @@ public record CreateListingDto(String title,
                             .longitude(longitude)
                             .latitude(latitude)
                             .category(Category.valueOf(category))
-                            .userId(userId)
+                            .customerId(customerId)
                             .status(ListingStatus.valueOf(status))
                             .images(images)
                             .createdAt(Instant.now().toEpochMilli())

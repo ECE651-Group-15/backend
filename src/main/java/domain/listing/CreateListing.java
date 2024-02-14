@@ -15,7 +15,7 @@ public class CreateListing {
     double longitude;
     double latitude;
     Category category;
-    String userId;
+    String customerId;
     ListingStatus status;
     List<String> images;
     long createdAt;

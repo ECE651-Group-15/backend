@@ -5,9 +5,11 @@ import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,11 +22,12 @@ public class ListingService {
     @Inject
     CustomerProfileRepository customerProfileRepository;
 
+    @Transactional
     public Optional<ListingDetails> createListing(CreateListing createListing) {
         validateListing(createListing);
 
         Optional<CustomerProfileEntity> customerProfileEntity =
-                customerProfileRepository.getCustomerProfile(createListing.getUserId());
+                customerProfileRepository.getCustomerProfile(createListing.getCustomerId());
         if (customerProfileEntity.isEmpty()) {
             return Optional.empty();
         }
@@ -37,7 +40,7 @@ public class ListingService {
                                                       .latitude(createListing.getLatitude())
                                                       .longitude(createListing.getLongitude())
                                                       .category(createListing.getCategory())
-                                                      .userId(createListing.getUserId())
+                                                      .customerId(createListing.getCustomerId())
                                                       .status(createListing.getStatus())
                                                       .images(createListing.getImages())
                                                       .createdAt(createListing.getCreatedAt())
@@ -46,12 +49,17 @@ public class ListingService {
 
         ListingEntity listingEntity = ListingEntity.fromDomain(listingDetails,
                                                                customerProfileEntity.get());
+
+        List<ListingEntity> postedListings = customerProfileEntity.get().getPostedListings();
+        postedListings.add(listingEntity);
+        customerProfileEntity.get().setPostedListings(postedListings);
+        customerProfileRepository.updateCustomerProfile(customerProfileEntity.get());
         listingRepository.save(listingEntity);
         return Optional.of(listingDetails);
     }
 
     private void validateListing(CreateListing createListing) {
-        if (createListing.getUserId() == null || createListing.getUserId().trim().isEmpty()) {
+        if (createListing.getCustomerId() == null || createListing.getCustomerId().trim().isEmpty()) {
             throw new BadRequestException("User ID is required");
         } else if (createListing.getTitle() == null || createListing.getTitle().trim().isEmpty()) {
             throw new BadRequestException("Title is required");
@@ -64,8 +72,9 @@ public class ListingService {
     }
 
     public Optional<ListingDetails> updateListing(UpdateListing updateListing) {
+        // TODO: add check customerId here, we shouldn't allow customer to update other customer's listing
         Optional<CustomerProfileEntity> customerProfileEntity =
-                customerProfileRepository.getCustomerProfile(updateListing.getUserId());
+                customerProfileRepository.getCustomerProfile(updateListing.getCustomerId());
         if (customerProfileEntity.isEmpty()) {
             return Optional.empty();
         }
@@ -93,20 +102,51 @@ public class ListingService {
         }
     }
 
+    @Transactional
     public Optional<ListingDetails> deleteListing(String listingId) {
         Optional<ListingDetails> existingListing = getListing(listingId);
+
         if (existingListing.isEmpty()) {
             return Optional.empty();
         }
         else {
             Optional<CustomerProfileEntity> customerProfileEntity =
-                    customerProfileRepository.getCustomerProfile(existingListing.get().userId);
+                    customerProfileRepository.getCustomerProfile(existingListing.get().customerId);
             if (customerProfileEntity.isEmpty()) {
                 return Optional.empty();
             }
+            List<ListingEntity> postedListings = customerProfileEntity.get().getPostedListings();
+            postedListings.removeIf(listingEntity -> listingEntity.getId().equals(listingId));
+            customerProfileEntity.get().setPostedListings(postedListings);
+            customerProfileRepository.updateCustomerProfile(customerProfileEntity.get());
+
             ListingEntity listingEntity = ListingEntity.fromDomain(existingListing.get(),
                                                                    customerProfileEntity.get());
             return listingRepository.deleteListing(listingEntity).map(ListingEntity::toDomain);
         }
+    }
+
+
+
+    @Transactional
+    public Optional<ListingDetails> starListing(StarListing starListing) {
+        Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
+        Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(starListing.getCustomerId());
+
+        if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        ListingEntity listingEntity = listingEntityOptional.get();
+        CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
+
+        List<CustomerProfileEntity> customersWhoStarred = listingEntity.getCustomersWhoStarred();
+        if (!customersWhoStarred.contains(customerProfileEntity)) {
+            customersWhoStarred.add(customerProfileEntity);
+            listingEntity.setCustomersWhoStarred(customersWhoStarred);
+            listingRepository.updateListing(listingEntity);
+        }
+
+        return listingRepository.getListing(starListing.getListingId())
+                                .map(ListingEntity::toDomain);
     }
 }

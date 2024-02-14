@@ -61,7 +61,6 @@ public class CustomerProfileResources {
                                                                              200,
                                                                              Optional.empty());
         if (updatedCustomerProfile.isEmpty()) {
-            //throw new BadRequestException("Cannot find listing with ID" + updateCustomerProfileDto.id() + ".");
             response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
             response.setCode(4001);
         } else {
@@ -81,7 +80,6 @@ public class CustomerProfileResources {
         Optional<CustomerProfile> deletedCustomerProfile = customerProfileService.deleteCustomerProfile(customerId);
         if (deletedCustomerProfile.isEmpty()) {
             response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
-            //throw new BadRequestException("Cannot delete customer profile with ID" + customerId + ", as it's not found.");
             response.setCode(4001);
         } else {
             response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deletedCustomerProfile.get())));

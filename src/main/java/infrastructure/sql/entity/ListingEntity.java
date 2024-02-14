@@ -5,6 +5,7 @@ import domain.listing.ListingDetails;
 import domain.listing.ListingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,13 +21,14 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Builder(toBuilder = true)
 public class ListingEntity {
     @Id
     private String id;
 
     private String title;
     private String description;
-    private Double price; // Assuming price is mandatory for simplicity
+    private Double price;
 
     private Double longitude;
     private Double latitude;
@@ -41,7 +43,7 @@ public class ListingEntity {
     @Enumerated(EnumType.STRING)
     private ListingStatus status;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;
 
     @ManyToMany
@@ -85,6 +87,8 @@ public class ListingEntity {
         entity.setImages(entity.getImages());
         entity.setCreatedAt(entity.getCreatedAt());
         entity.setUpdatedAt(entity.getUpdatedAt());
+        entity.setCustomersWhoStarred(entity.getCustomersWhoStarred());
+        entity.setCustomerProfile(entity.getCustomerProfile());
     }
 
     public ListingDetails toDomain() {
@@ -96,11 +100,16 @@ public class ListingEntity {
                              .longitude(this.longitude)
                              .latitude(this.latitude)
                              .category(this.category)
-                             .userId(this.customerProfile != null ? this.customerProfile.getId() : null)
+                             .customerId(this.customerProfile != null ? this.customerProfile.getId() : null)
                              .status(this.status)
                              .images(this.images)
                              .createdAt(this.createdAt)
                              .updatedAt(this.updatedAt)
+                             .customersWhoStarred(this.customersWhoStarred != null
+                                                          ? this.customersWhoStarred.stream()
+                                                                                    .map(CustomerProfileEntity::getId)
+                                                                                    .toList()
+                                                          : List.of())
                              .build();
     }
 

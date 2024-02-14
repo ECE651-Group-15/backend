@@ -3,12 +3,11 @@ package infrastructure.sql.entity;
 import domain.profile.CustomerProfile;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +23,7 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "customer_profile")
+@Builder(toBuilder = true)
 public class CustomerProfileEntity {
     @Id
     private String id;
@@ -34,14 +34,9 @@ public class CustomerProfileEntity {
     private Double latitude;
 
     @OneToMany(mappedBy = "customerProfile")
-    private List<ListingEntity> listings;
+    private List<ListingEntity> postedListings;
 
-    @ManyToMany
-    @JoinTable(
-            name = "customer_starred_listings", // Define a join table for the relationship
-            joinColumns = @JoinColumn(name = "customer_profile_id"),
-            inverseJoinColumns = @JoinColumn(name = "listing_id")
-    )
+    @ManyToMany(mappedBy = "customersWhoStarred")
     private List<ListingEntity> starredListings;
 
     public static CustomerProfileEntity fromDomain(CustomerProfile customerProfile) {
@@ -61,6 +56,8 @@ public class CustomerProfileEntity {
         entity.setPhone(entity.getPhone());
         entity.setLongitude(entity.getLongitude());
         entity.setLatitude(entity.getLatitude());
+        entity.setPostedListings(entity.getPostedListings());
+        entity.setStarredListings(entity.getStarredListings());
     }
 
     public CustomerProfile toDomain() {
@@ -72,10 +69,10 @@ public class CustomerProfileEntity {
                                                  .longitude(Optional.of(this.longitude))
                                                  .latitude(Optional.of(this.latitude))
                                                  .build();
-        if (this.listings != null) {
-            List<String> listingIds = this.listings.stream()
-                                                   .map(ListingEntity::getId)
-                                                   .collect(toList());
+        if (this.postedListings != null) {
+            List<String> listingIds = this.postedListings.stream()
+                                                         .map(ListingEntity::getId)
+                                                         .collect(toList());
             profile = profile.toBuilder()
                              .postedListingIds(Optional.of(listingIds))
                              .build();
