@@ -1,6 +1,5 @@
 package infrastructure.dto.out.listing;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import domain.listing.ListingDetails;
 import lombok.Builder;
 
@@ -9,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Builder
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
+//@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record ListingDetailsDto(String id,
                                 String title,
                                 String description,
@@ -17,11 +16,12 @@ public record ListingDetailsDto(String id,
                                 Double longitude,
                                 Double latitude,
                                 String category,
-                                String userId,
+                                String customerId,
                                 String status,
                                 List<String> images,
                                 Instant createdAt,
-                                Instant updatedAt) {
+                                Instant updatedAt,
+                                List<String> customersWhoStarred) {
     public static ListingDetailsDto fromDomain(ListingDetails listingDetails) {
         return ListingDetailsDto.builder()
                                 .id(listingDetails.getId())
@@ -31,11 +31,16 @@ public record ListingDetailsDto(String id,
                                 .longitude(listingDetails.getLongitude())
                                 .latitude(listingDetails.getLatitude())
                                 .category(String.valueOf(listingDetails.getCategory()))
-                                .userId(listingDetails.getUserId())
+                                .customerId(listingDetails.getCustomerId())
                                 .status(String.valueOf(listingDetails.getStatus()))
                                 .images(listingDetails.getImages())
                                 .createdAt(Instant.ofEpochMilli(listingDetails.getCreatedAt()))
                                 .updatedAt(Instant.ofEpochMilli(listingDetails.getUpdatedAt()))
+                                .customersWhoStarred(listingDetails.getCustomersWhoStarred() != null
+                                                             ? listingDetails.getCustomersWhoStarred()
+                                                                             .stream()
+                                                                             .toList()
+                                                             : List.of())
                                 .build();
     }
 }

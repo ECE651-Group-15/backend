@@ -16,7 +16,7 @@ public record UpdateListingDto(String id,
                                Double latitude,
                                Double longitude,
                                String category,
-                               String userId,
+                               String customerId,
                                String status,
                                List<String> images) {
     public UpdateListing toDomain() {
@@ -28,7 +28,7 @@ public record UpdateListingDto(String id,
                             .longitude(longitude)
                             .latitude(latitude)
                             .category(Category.valueOf(category))
-                            .userId(userId)
+                            .customerId(customerId)
                             .status(ListingStatus.valueOf(status))
                             .images(images)
                             .build();

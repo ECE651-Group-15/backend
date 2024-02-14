@@ -32,10 +32,9 @@ public class ListingResources {
                                                                     Optional.empty());
         Optional<ListingDetails> createdListing = listingService.createListing(createListingDto.toDomain());
         if (createdListing.isEmpty()) {
-            response.setMessage(Optional.of("Cannot find create listing with customer id: " + createListingDto.userId() + "."));
+            response.setMessage(Optional.of("Cannot find create listing with customer id: " + createListingDto.customerId() + "."));
             response.setCode(4001);
-        }
-        else{
+        } else {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(createdListing.get())));
         }
         return Response.ok(response).build();
@@ -46,8 +45,8 @@ public class ListingResources {
     public Response getListing(@PathParam("listingId") String listingId) {
         Optional<ListingDetails> fetchedListing = listingService.getListing(listingId);
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                  200,
-                                                                  Optional.empty());
+                                                                    200,
+                                                                    Optional.empty());
         if (fetchedListing.isPresent()) {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(fetchedListing.get())));
         } else {
@@ -63,12 +62,13 @@ public class ListingResources {
     public Response updateListing(UpdateListingDto updateListingDto) {
         Optional<ListingDetails> updatedListing = listingService.updateListing(updateListingDto.toDomain());
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                  200,
-                                                                  Optional.empty());
+                                                                    200,
+                                                                    Optional.empty());
         if (updatedListing.isPresent()) {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(updatedListing.get())));
         } else {
-            response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
+            response.setMessage(
+                    Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
             response.setCode(4001);
         }
         return Response.ok(response).build();
@@ -79,8 +79,8 @@ public class ListingResources {
     public Response deleteListing(@PathParam("listingId") String listingId) {
         Optional<ListingDetails> deletedListing = listingService.deleteListing(listingId);
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                  200,
-                                                                  Optional.empty());
+                                                                    200,
+                                                                    Optional.empty());
         if (deletedListing.isPresent()) {
             response.setData(Optional.of(ListingDetailsDto.fromDomain(deletedListing.get())));
         } else {
@@ -89,4 +89,5 @@ public class ListingResources {
         }
         return Response.ok(response).build();
     }
+
 }

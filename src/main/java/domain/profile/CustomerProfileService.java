@@ -1,8 +1,12 @@
 package domain.profile;
 
+import domain.listing.ListingRepository;
+import domain.listing.StarListing;
 import infrastructure.sql.entity.CustomerProfileEntity;
+import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 
 import java.util.List;
@@ -13,6 +17,9 @@ import java.util.UUID;
 public class CustomerProfileService {
     @Inject
     CustomerProfileRepository customerProfileRepository;
+
+    @Inject
+    ListingRepository listingRepository;
 
     public CustomerProfile createProfile(CreateCustomerProfile createCustomerProfile) {
         validateProfile(createCustomerProfile);
@@ -68,5 +75,27 @@ public class CustomerProfileService {
                                                                                   .get())
                                             .map(CustomerProfileEntity::toDomain);
         }
+    }
+
+
+    @Transactional
+    public Optional<CustomerProfile> starListing(StarListing starListing) {
+        Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
+        Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(starListing.getCustomerId());
+
+        if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        ListingEntity listingEntity = listingEntityOptional.get();
+        CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
+
+        List<ListingEntity> starredListings = customerProfileEntity.getStarredListings();
+        if (!starredListings.contains(listingEntity)) {
+            starredListings.add(listingEntity);
+            customerProfileEntity.setStarredListings(starredListings);
+            customerProfileRepository.updateCustomerProfile(customerProfileEntity);
+        }
+        return customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
+                                        .map(CustomerProfileEntity::toDomain);
     }
 }
