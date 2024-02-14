@@ -18,8 +18,7 @@ public record UpdateListingDto(String id,
                                String category,
                                String userId,
                                String status,
-                               List<String> images,
-                               Integer starCount) {
+                               List<String> images) {
     public UpdateListing toDomain() {
         return UpdateListing.builder()
                             .id(id)
@@ -32,7 +31,6 @@ public record UpdateListingDto(String id,
                             .userId(userId)
                             .status(ListingStatus.valueOf(status))
                             .images(images)
-                            .starCount(starCount)
                             .build();
     }
 }

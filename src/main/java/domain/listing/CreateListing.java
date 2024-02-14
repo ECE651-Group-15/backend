@@ -3,7 +3,6 @@ package domain.listing;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +18,6 @@ public class CreateListing {
     String userId;
     ListingStatus status;
     List<String> images;
-    int starCount;
     long createdAt;
     long updatedAt;
 }

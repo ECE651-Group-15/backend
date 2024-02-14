@@ -1,10 +1,12 @@
 package domain.profile;
 
+import infrastructure.sql.entity.CustomerProfileEntity;
+
 import java.util.Optional;
 
 public interface CustomerProfileRepository {
-    void save(CustomerProfile customerProfile);
-    Optional<CustomerProfile> getCustomerProfile(String id);
-    Optional<CustomerProfile> updateCustomerProfile(CustomerProfile customerProfile);
-    Optional<CustomerProfile> deleteCustomerProfile(CustomerProfile customerProfile);
+    void save(CustomerProfileEntity customerProfile);
+    Optional<CustomerProfileEntity> getCustomerProfile(String id);
+    Optional<CustomerProfileEntity> updateCustomerProfile(CustomerProfileEntity customerProfile);
+    Optional<CustomerProfileEntity> deleteCustomerProfile(CustomerProfileEntity customerProfile);
 }

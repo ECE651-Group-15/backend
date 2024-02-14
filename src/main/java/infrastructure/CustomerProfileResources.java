@@ -47,7 +47,6 @@ public class CustomerProfileResources {
         } else {
             response.setMessage(Optional.of("Cannot find customer with id " + customerId + "."));
             response.setCode(4001);
-            //throw new BadRequestException("Cannot find customer with ID" + customerId + ".");
         }
 
         return Response.ok(response).build();
