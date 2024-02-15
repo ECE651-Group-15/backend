@@ -9,12 +9,14 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
 public class ListingService {
+    private final Integer PAGE_SIZE = 20;
 
     @Inject
     ListingRepository listingRepository;
@@ -148,5 +150,28 @@ public class ListingService {
 
         return listingRepository.getListing(starListing.getListingId())
                                 .map(ListingEntity::toDomain);
+    }
+
+    public List<ListingDetails> getListingPage(int page, Optional<List<String>> listingIds) {
+        if (listingIds.isEmpty()) {
+            return List.of();
+        }
+        else {
+            if (listingIds.get().size() < (page * PAGE_SIZE)) {
+                return List.of();
+            }
+            List<ListingDetails> listings = new ArrayList<>();
+            for (int i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
+                if (i >= listingIds.get().size()) {
+                    break;
+                }
+                String listingId = listingIds.get().get(i);
+                Optional<ListingDetails> listing = listingRepository.getListing(listingId)
+                                                                    .map(ListingEntity::toDomain);
+                listing.ifPresent(list -> listings.add(list));
+            }
+            listings.sort((l1, l2) -> Long.compare(l2.getUpdatedAt(), l1.getUpdatedAt()));
+            return listings;
+        }
     }
 }
