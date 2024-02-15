@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class ListingService {
-    private final Integer PAGE_SIZE = 20;
+    private final Integer DEFAULT_PAGE_SIZE = 20;
 
     @Inject
     ListingRepository listingRepository;
@@ -69,6 +69,7 @@ public class ListingService {
             throw new BadRequestException("Description is required");
         }
     }
+
     public Optional<ListingDetails> getListing(String listingId) {
         return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
     }
@@ -84,8 +85,7 @@ public class ListingService {
         Optional<ListingDetails> existingListing = getListing(updateListing.getId());
         if (existingListing.isEmpty()) {
             return Optional.empty();
-        }
-        else {
+        } else {
             ListingDetails listingDetails = existingListing.get();
             listingDetails = listingDetails.toBuilder()
                                            .title(updateListing.getTitle())
@@ -110,8 +110,7 @@ public class ListingService {
 
         if (existingListing.isEmpty()) {
             return Optional.empty();
-        }
-        else {
+        } else {
             Optional<CustomerProfileEntity> customerProfileEntity =
                     customerProfileRepository.getCustomerProfile(existingListing.get().customerId);
             if (customerProfileEntity.isEmpty()) {
@@ -129,11 +128,11 @@ public class ListingService {
     }
 
 
-
     @Transactional
     public Optional<ListingDetails> starListing(StarListing starListing) {
         Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
-        Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(starListing.getCustomerId());
+        Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
+                starListing.getCustomerId());
 
         if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
             return Optional.empty();
@@ -152,16 +151,15 @@ public class ListingService {
                                 .map(ListingEntity::toDomain);
     }
 
-    public List<ListingDetails> getListingPage(int page, Optional<List<String>> listingIds) {
+    public List<ListingDetails> getListingPage(int page, Optional<Integer> pageSize, Optional<List<String>> listingIds) {
         if (listingIds.isEmpty()) {
             return List.of();
-        }
-        else {
-            if (listingIds.get().size() < (page * PAGE_SIZE)) {
+        } else {
+            if (listingIds.get().size() < (page * pageSize.orElse(DEFAULT_PAGE_SIZE))) {
                 return List.of();
             }
             List<ListingDetails> listings = new ArrayList<>();
-            for (int i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
+            for (int i = page * pageSize.orElse(DEFAULT_PAGE_SIZE); i < (page + 1) * pageSize.orElse(DEFAULT_PAGE_SIZE); i++) {
                 if (i >= listingIds.get().size()) {
                     break;
                 }
@@ -173,5 +171,23 @@ public class ListingService {
             listings.sort((l1, l2) -> Long.compare(l2.getUpdatedAt(), l1.getUpdatedAt()));
             return listings;
         }
+    }
+
+    public List<ListingWithCustomerInfo> getListingAndCustomerByPage(int page, int pageSize) {
+        return listingRepository.getListingPage(page, pageSize)
+                                .stream()
+                                .map(listingEntity -> {
+                                    Optional<CustomerProfileEntity> customerProfileEntity =
+                                            customerProfileRepository.getCustomerProfile(listingEntity.getCustomerProfile().getId());
+                                    return customerProfileEntity.map(customerProfile -> ListingWithCustomerInfo.builder()
+                                                                                                               .listingDetails(
+                                                                                                                       listingEntity.toDomain())
+                                                                                                               .customerProfile(
+                                                                                                                       customerProfile.toDomain())
+                                                                                                               .build());
+                                })
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .toList();
     }
 }
