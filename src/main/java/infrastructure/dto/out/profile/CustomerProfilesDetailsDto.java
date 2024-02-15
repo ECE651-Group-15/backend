@@ -10,7 +10,7 @@ import java.util.Optional;
 //@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public record CustomerProfilesDetailsDto(String id,
                                          String name,
-                                         Optional<String> email,
+                                         String email,
                                          Optional<String> phone,
                                          Optional<Double> longitude,
                                          Optional<Double> latitude,

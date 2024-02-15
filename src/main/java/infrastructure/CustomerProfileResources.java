@@ -26,11 +26,17 @@ public class CustomerProfileResources {
     @POST
     @Path("/create-profile")
     public Response createCustomerProfile(CreateCustomerProfileDto createCustomerProfileDto) {
-        CustomerProfilesDetailsDto createdCustomerProfile =
-                CustomerProfilesDetailsDto.fromDomain(customerProfileService.createProfile(createCustomerProfileDto.toDomain()));
         ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
                                                                              200,
-                                                                             Optional.of(createdCustomerProfile));
+                                                                             Optional.empty());
+        Optional<CustomerProfile> createdCustomerProfile =
+                customerProfileService.createProfile(createCustomerProfileDto.toDomain());
+        if (createdCustomerProfile.isEmpty()) {
+            response.setMessage(Optional.of("Customer with email " + createCustomerProfileDto.email() + " already exists."));
+            response.setCode(4001);
+        } else {
+            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(createdCustomerProfile.get())));
+        }
         return Response.ok(response).build();
     }
 

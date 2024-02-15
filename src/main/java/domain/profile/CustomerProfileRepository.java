@@ -9,4 +9,6 @@ public interface CustomerProfileRepository {
     Optional<CustomerProfileEntity> getCustomerProfile(String id);
     Optional<CustomerProfileEntity> updateCustomerProfile(CustomerProfileEntity customerProfile);
     Optional<CustomerProfileEntity> deleteCustomerProfile(CustomerProfileEntity customerProfile);
+
+    Optional<CustomerProfileEntity> getCustomerProfileByEmail(String email);
 }

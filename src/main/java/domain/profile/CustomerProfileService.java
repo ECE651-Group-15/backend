@@ -21,11 +21,17 @@ public class CustomerProfileService {
     @Inject
     ListingRepository listingRepository;
 
-    public CustomerProfile createProfile(CreateCustomerProfile createCustomerProfile) {
+    public Optional<CustomerProfile> createProfile(CreateCustomerProfile createCustomerProfile) {
+        Optional<CustomerProfile> existedCustomer = customerProfileRepository.getCustomerProfileByEmail(createCustomerProfile.getEmail())
+                                                                           .map(CustomerProfileEntity::toDomain);
+        if (existedCustomer.isPresent()) {
+            return Optional.empty();
+        }
         validateProfile(createCustomerProfile);
         CustomerProfile customerProfile = CustomerProfile.builder()
                                                          .id(UUID.randomUUID().toString())
                                                          .name(createCustomerProfile.getName())
+                                                         .password(createCustomerProfile.getPassword())
                                                          .email(createCustomerProfile.getEmail())
                                                          .phone(createCustomerProfile.getPhone())
                                                          .longitude(createCustomerProfile.getLongitude())
@@ -35,12 +41,14 @@ public class CustomerProfileService {
                                                          .build();
         CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.fromDomain(customerProfile);
         customerProfileRepository.save(customerProfileEntity);
-        return customerProfile;
+        return Optional.of(customerProfile);
     }
 
     private void validateProfile(CreateCustomerProfile createCustomerProfile) {
-        if (createCustomerProfile.getName() == null || createCustomerProfile.getName().trim().isEmpty()) {
-            throw new BadRequestException("Name is required for a profile");
+        if (createCustomerProfile.getEmail() == null
+                || createCustomerProfile.getEmail().trim().isEmpty()
+                || createCustomerProfile.getName() == null || createCustomerProfile.getName().trim().isEmpty()){
+            throw new BadRequestException("Email and name are required for a profile");
         }
     }
 
@@ -49,14 +57,22 @@ public class CustomerProfileService {
     }
 
     public Optional<CustomerProfile> updateCustomerProfile(UpdateCustomerProfile updateCustomerProfile) {
+        boolean verified = verifyUser(updateCustomerProfile.getId(),
+                                      updateCustomerProfile.getEmail(),
+                                      updateCustomerProfile.getPassword());
+        if (!verified) {
+            return Optional.empty();
+        }
+
         Optional<CustomerProfile> existedCustomer = getCustomerProfile(updateCustomerProfile.getId());
         if (existedCustomer.isEmpty()) {
             return Optional.empty();
         } else {
             CustomerProfile customerProfile = existedCustomer.get();
             customerProfile = customerProfile.toBuilder()
-                                             .name(updateCustomerProfile.getName())
                                              .email(updateCustomerProfile.getEmail())
+                                             .password(updateCustomerProfile.getPassword())
+                                             .name(updateCustomerProfile.getName())
                                              .phone(updateCustomerProfile.getPhone())
                                              .longitude(updateCustomerProfile.getLongitude())
                                              .latitude(updateCustomerProfile.getLatitude())
@@ -81,7 +97,8 @@ public class CustomerProfileService {
     @Transactional
     public Optional<CustomerProfile> starListing(StarListing starListing) {
         Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
-        Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(starListing.getCustomerId());
+        Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
+                starListing.getCustomerId());
 
         if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
             return Optional.empty();
@@ -97,5 +114,10 @@ public class CustomerProfileService {
         }
         return customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
                                         .map(CustomerProfileEntity::toDomain);
+    }
+
+    public boolean verifyUser(String id, String email, String password) {
+        Optional<CustomerProfile> customerProfile = customerProfileRepository.getCustomerProfile(id).map(CustomerProfileEntity::toDomain);
+        return customerProfile.map(profile -> profile.getEmail().equals(email) && profile.getPassword().equals(password)).orElse(false);
     }
 }

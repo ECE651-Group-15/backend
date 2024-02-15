@@ -9,7 +9,8 @@ import java.util.Optional;
 @Builder(toBuilder = true)
 public class CreateCustomerProfile {
     String name;
-    Optional<String> email;
+    String email;
+    String password;
     Optional<String> phone;
     Optional<Double> longitude;
     Optional<Double> latitude;
