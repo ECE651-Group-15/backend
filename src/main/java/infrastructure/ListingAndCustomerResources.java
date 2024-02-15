@@ -56,7 +56,7 @@ public class ListingAndCustomerResources {
 
     @POST
     @Path("/get-customer-posted-listings")
-    public Response getCustomerProfile(GetCustomerPostedListingsDto getCustomerListingsDto) {
+    public Response getCustomerPostedListings(GetCustomerPostedListingsDto getCustomerListingsDto) {
         Optional<CustomerProfile> fetchedCustomerProfile =
                 customerProfileService.getCustomerProfile(getCustomerListingsDto.customerId());
 
