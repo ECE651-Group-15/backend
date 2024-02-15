@@ -26,4 +26,5 @@ export PATH=$PATH:$MAVEN_HOME/bin
 export JAVA_HOME=/opt/amazon-corretto-17.0.10.8.1-linux-x64
 export PATH=$PATH:$JAVA_HOME/bin
 
+./mvnw package
 nohup java -jar target/quarkus-app/quarkus-run.jar > app.log 2>&1 &
