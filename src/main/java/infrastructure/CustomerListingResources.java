@@ -7,11 +7,12 @@ import domain.profile.CustomerProfileService;
 import infrastructure.dto.ApiResponse;
 import infrastructure.dto.in.listing.ListingPageDto;
 import infrastructure.dto.in.listing.StarListingDto;
-import infrastructure.dto.in.profile.GetCustomerPostedListingsDto;
+import infrastructure.dto.in.profile.GetCustomerListingsDto;
 import infrastructure.dto.out.listing.ListingWithCustomerInfoDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
 import infrastructure.dto.out.listing.ListingPageDetailsDto;
 import infrastructure.dto.out.listing.PostedListingPageDto;
+import infrastructure.dto.out.listing.StarredListingPageDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -56,7 +57,7 @@ public class CustomerListingResources {
 
     @POST
     @Path("/get-customer-posted-listings")
-    public Response getCustomerPostedListings(GetCustomerPostedListingsDto getCustomerListingsDto) {
+    public Response getCustomerPostedListings(GetCustomerListingsDto getCustomerListingsDto) {
         Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.getCustomerProfile(getCustomerListingsDto.customerId());
 
         ApiResponse<PostedListingPageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
@@ -76,6 +77,33 @@ public class CustomerListingResources {
                                                              .build()));
         } else {
             response.setMessage(Optional.of("Cannot find customer with id " + getCustomerListingsDto.customerId() + "."));
+            response.setCode(4001);
+        }
+
+        return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/starred-listings")
+    public Response getStarredListings(GetCustomerListingsDto customerListingsDto) {
+        Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.getCustomerProfile(customerListingsDto.customerId());
+        ApiResponse<StarredListingPageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
+
+        if (customerListingsDto.page() < 0) {
+            response.setMessage(Optional.of("Page number cannot be negative."));
+            response.setCode(4001);
+            return Response.ok(response).build();
+        }
+        if (fetchedCustomerProfile.isPresent()) {
+            List<ListingDetails> starredListings = listingService.getListingPage(customerListingsDto.page(),
+                                                                                 customerListingsDto.pageSize(),
+                                                                                 fetchedCustomerProfile.get().getStarredListingIds());
+            response.setData(Optional.of(StarredListingPageDto.builder()
+                                                              .starredListings(
+                                                                      starredListings.stream().map(ListingDetailsDto::fromDomain).toList())
+                                                              .build()));
+        } else {
+            response.setMessage(Optional.of("Cannot find customer with id " + customerListingsDto.customerId() + "."));
             response.setCode(4001);
         }
 
