@@ -57,7 +57,12 @@ public class CustomerListingResources {
     @POST
     @Path("/get-customer-posted-listings")
     public Response getCustomerPostedListings(GetCustomerPostedListingsDto getCustomerListingsDto) {
+<<<<<<< HEAD:src/main/java/infrastructure/CustomerListingResources.java
         Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.getCustomerProfile(getCustomerListingsDto.customerId());
+=======
+        Optional<CustomerProfile> fetchedCustomerProfile =
+                customerProfileService.getCustomerProfile(getCustomerListingsDto.customerId());
+>>>>>>> main:src/main/java/infrastructure/ListingAndCustomerResources.java
 
         ApiResponse<PostedListingPageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
 
