@@ -17,6 +17,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
@@ -131,6 +132,28 @@ public class CustomerListingResources {
             response.setMessage(Optional.of("No listings found."));
         }
         response.setData(Optional.of(ListingPageDetailsDto.builder().listingDetails(listingAndCustomerDetails).build()));
+        return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/listing/{listingId}/customer/")
+    public Response getListingWithCustomerDetail(@PathParam("listingId") String listingId) {
+        ApiResponse<ListingWithCustomerInfoDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
+
+        Optional<ListingDetails> listingDetails = listingService.getListing(listingId);
+        if (listingDetails.isEmpty()) {
+            response.setMessage(Optional.of("Cannot find listing with id " + listingId + "."));
+            response.setCode(200);
+            return Response.ok(response).build();
+        }
+        Optional<CustomerProfile> customerProfile = customerProfileService.getCustomerProfile(listingDetails.get().getCustomerId());
+        if (customerProfile.isEmpty()) {
+            response.setMessage(Optional.of("Cannot find customer with id " + listingDetails.get().getCustomerId() + "."));
+            response.setCode(200);
+            return Response.ok(response).build();
+        }
+        ListingWithCustomerInfoDto listingAndCustomerDetails = ListingWithCustomerInfoDto.fromDomain(listingDetails.get(), customerProfile.get());
+        response.setData(Optional.ofNullable(listingAndCustomerDetails));
         return Response.ok(response).build();
     }
 }
