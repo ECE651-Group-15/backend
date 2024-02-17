@@ -28,6 +28,7 @@ public class CustomerProfileEntity {
     @Id
     private String id;
     private String name;
+    private String password;
     private String email;
     private String phone;
     private Double longitude;
@@ -43,7 +44,8 @@ public class CustomerProfileEntity {
         CustomerProfileEntity entity = new CustomerProfileEntity();
         entity.setId(customerProfile.getId());
         entity.setName(customerProfile.getName());
-        entity.setEmail(customerProfile.getEmail().orElse(null));
+        entity.setPassword(customerProfile.getPassword());
+        entity.setEmail(customerProfile.getEmail());
         entity.setPhone(customerProfile.getPhone().orElse(null));
         entity.setLongitude(customerProfile.getLongitude().orElse(null));
         entity.setLatitude(customerProfile.getLatitude().orElse(null));
@@ -53,6 +55,7 @@ public class CustomerProfileEntity {
     public static void updateFromEntity(CustomerProfileEntity entity) {
         entity.setName(entity.getName());
         entity.setEmail(entity.getEmail());
+        entity.setPassword(entity.getPassword());
         entity.setPhone(entity.getPhone());
         entity.setLongitude(entity.getLongitude());
         entity.setLatitude(entity.getLatitude());
@@ -64,7 +67,8 @@ public class CustomerProfileEntity {
         CustomerProfile profile = CustomerProfile.builder()
                                                  .id(this.id)
                                                  .name(this.name)
-                                                 .email(Optional.of(this.email))
+                                                 .email(this.email)
+                                                 .password(this.password)
                                                  .phone(Optional.of(this.phone))
                                                  .longitude(Optional.of(this.longitude))
                                                  .latitude(Optional.of(this.latitude))

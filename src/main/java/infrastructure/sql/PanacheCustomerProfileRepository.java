@@ -21,6 +21,10 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
         }
     }
 
+    public Optional<CustomerProfileEntity> getCustomerProfileByEmail(String email) {
+        return find("email", email).firstResultOptional();
+    }
+
     @Override
     public Optional<CustomerProfileEntity> getCustomerProfile(String customerId) {
         return find("id", customerId).firstResultOptional();

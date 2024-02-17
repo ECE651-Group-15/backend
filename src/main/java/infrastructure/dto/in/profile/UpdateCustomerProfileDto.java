@@ -8,7 +8,8 @@ import java.util.Optional;
 @Builder(toBuilder = true)
 public record UpdateCustomerProfileDto(String id,
                                        String name,
-                                       Optional<String> email,
+                                       String password,
+                                       String email,
                                        Optional<String> phone,
                                        Optional<Double> longitude,
                                        Optional<Double> latitude) {
@@ -16,6 +17,7 @@ public record UpdateCustomerProfileDto(String id,
         return UpdateCustomerProfile.builder()
                                     .id(id)
                                     .name(name)
+                                    .password(password)
                                     .email(email)
                                     .phone(phone)
                                     .longitude(longitude)
