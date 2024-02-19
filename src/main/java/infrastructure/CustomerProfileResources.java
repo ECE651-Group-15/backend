@@ -119,7 +119,7 @@ public class CustomerProfileResources {
 
         CustomerProfilePageDto customerProfilePageDto
                 = CustomerProfilePageDto.builder()
-                                        .customerProfilesDetails(customerProfilePage)
+                                        .customerProfiles(customerProfilePage)
                                         .build();
         response.setData(Optional.ofNullable(customerProfilePageDto));
         return Response.ok(response).build();

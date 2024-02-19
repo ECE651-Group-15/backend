@@ -5,5 +5,5 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record CustomerProfilePageDto(List<CustomerProfilesDetailsDto> customerProfilesDetails) {
+public record CustomerProfilePageDto(List<CustomerProfilesDetailsDto> customerProfiles) {
 }
