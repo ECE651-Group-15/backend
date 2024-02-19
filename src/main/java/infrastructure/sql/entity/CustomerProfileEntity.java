@@ -70,8 +70,8 @@ public class CustomerProfileEntity {
                                                  .email(this.email)
                                                  .password(this.password)
                                                  .phone(Optional.of(this.phone))
-                                                 .longitude(Optional.of(this.longitude))
-                                                 .latitude(Optional.of(this.latitude))
+                                                 .longitude(Optional.ofNullable(this.longitude))
+                                                 .latitude(Optional.ofNullable(this.latitude))
                                                  .build();
         if (this.postedListings != null) {
             List<String> listingIds = this.postedListings.stream()
