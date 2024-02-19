@@ -4,5 +4,7 @@ public enum Category {
     BOOKS,
     CLOTHING,
     ELECTRONICS,
-    ONLINE_SERVICES
+    HOUSING,
+    ONLINE_SERVICES,
+    OTHER
 }

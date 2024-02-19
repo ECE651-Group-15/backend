@@ -1,5 +1,6 @@
 package domain.profile;
 
+import domain.MD5Util;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
 import infrastructure.sql.entity.CustomerProfileEntity;
@@ -23,7 +24,7 @@ public class CustomerProfileService {
 
     public Optional<CustomerProfile> createProfile(CreateCustomerProfile createCustomerProfile) {
         Optional<CustomerProfile> existedCustomer = customerProfileRepository.getCustomerProfileByEmail(createCustomerProfile.getEmail())
-                                                                           .map(CustomerProfileEntity::toDomain);
+                                                                             .map(CustomerProfileEntity::toDomain);
         if (existedCustomer.isPresent()) {
             return Optional.empty();
         }
@@ -33,6 +34,7 @@ public class CustomerProfileService {
                                                          .name(createCustomerProfile.getName())
                                                          .password(createCustomerProfile.getPassword())
                                                          .email(createCustomerProfile.getEmail())
+                                                         .avatar(MD5Util.md5Hex(createCustomerProfile.getEmail()))
                                                          .phone(createCustomerProfile.getPhone())
                                                          .longitude(createCustomerProfile.getLongitude())
                                                          .latitude(createCustomerProfile.getLatitude())
@@ -47,7 +49,7 @@ public class CustomerProfileService {
     private void validateProfile(CreateCustomerProfile createCustomerProfile) {
         if (createCustomerProfile.getEmail() == null
                 || createCustomerProfile.getEmail().trim().isEmpty()
-                || createCustomerProfile.getName() == null || createCustomerProfile.getName().trim().isEmpty()){
+                || createCustomerProfile.getName() == null || createCustomerProfile.getName().trim().isEmpty()) {
             throw new BadRequestException("Email and name are required for a profile");
         }
     }
@@ -119,5 +121,13 @@ public class CustomerProfileService {
     public boolean verifyUser(String id, String email, String password) {
         Optional<CustomerProfile> customerProfile = customerProfileRepository.getCustomerProfile(id).map(CustomerProfileEntity::toDomain);
         return customerProfile.map(profile -> profile.getEmail().equals(email) && profile.getPassword().equals(password)).orElse(false);
+    }
+
+    public List<CustomerProfile> getCustomerProfileByPage(int page,
+                                                          int pageSize) {
+        return customerProfileRepository.getCustomerProfileByPage(page, pageSize)
+                                        .stream()
+                                        .map(CustomerProfileEntity::toDomain)
+                                        .toList();
     }
 }

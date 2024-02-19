@@ -13,6 +13,7 @@ public class CustomerProfile {
     String email;
     String password;
     String name;
+    String avatar;
     Optional<String> phone;
     Optional<Double> longitude;
     Optional<Double> latitude;
