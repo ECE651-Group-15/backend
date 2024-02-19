@@ -3,8 +3,10 @@ package infrastructure;
 import domain.profile.CustomerProfile;
 import domain.profile.CustomerProfileService;
 import infrastructure.dto.ApiResponse;
+import infrastructure.dto.in.listing.ListingPageDto;
 import infrastructure.dto.in.profile.CreateCustomerProfileDto;
 import infrastructure.dto.in.profile.UpdateCustomerProfileDto;
+import infrastructure.dto.out.profile.CustomerProfilePageDto;
 import infrastructure.dto.out.profile.CustomerProfilesDetailsDto;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -14,6 +16,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -97,4 +100,28 @@ public class CustomerProfileResources {
         return Response.ok(response).build();
     }
 
+    @POST
+    @Path("/get-profile/page")
+    public Response getCustomerProfilesByPage(ListingPageDto listingPageDto) {
+        ApiResponse<CustomerProfilePageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
+
+        if (listingPageDto.page < 0 || (listingPageDto.pageSize.isPresent() && listingPageDto.pageSize.get() < 0)) {
+            response.setMessage(Optional.of("Page number and page size cannot be negative."));
+            response.setCode(4001);
+            return Response.ok(response).build();
+        }
+        List<CustomerProfilesDetailsDto> customerProfilePage
+                = customerProfileService.getCustomerProfileByPage(listingPageDto.page,
+                                                                  listingPageDto.pageSize.orElse(20))
+                                        .stream()
+                                        .map(CustomerProfilesDetailsDto::fromDomain)
+                                        .toList();
+
+        CustomerProfilePageDto customerProfilePageDto
+                = CustomerProfilePageDto.builder()
+                                        .customerProfilesDetails(customerProfilePage)
+                                        .build();
+        response.setData(Optional.ofNullable(customerProfilePageDto));
+        return Response.ok(response).build();
+    }
 }

@@ -2,6 +2,7 @@ package domain.profile;
 
 import infrastructure.sql.entity.CustomerProfileEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CustomerProfileRepository {
@@ -9,6 +10,6 @@ public interface CustomerProfileRepository {
     Optional<CustomerProfileEntity> getCustomerProfile(String id);
     Optional<CustomerProfileEntity> updateCustomerProfile(CustomerProfileEntity customerProfile);
     Optional<CustomerProfileEntity> deleteCustomerProfile(CustomerProfileEntity customerProfile);
-
     Optional<CustomerProfileEntity> getCustomerProfileByEmail(String email);
+    List<CustomerProfileEntity> getCustomerProfileByPage(int pageNumber, int pageSize);
 }

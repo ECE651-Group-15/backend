@@ -2,10 +2,14 @@ package infrastructure.sql;
 
 import domain.profile.CustomerProfileRepository;
 import infrastructure.sql.entity.CustomerProfileEntity;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Page;
+import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -46,5 +50,15 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
             throw new RuntimeException("Failure deleting listing from db", e);
         }
         return Optional.of(customerProfileEntity);
+    }
+
+    @Override
+    public List<CustomerProfileEntity> getCustomerProfileByPage(int pageNumber, int pageSize) {
+
+        PanacheQuery<CustomerProfileEntity> query = find("", Sort.by("name").descending());
+
+        query.page(Page.of(pageNumber, pageSize));
+
+        return query.list();
     }
 }

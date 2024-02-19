@@ -30,6 +30,7 @@ public class CustomerProfileEntity {
     private String name;
     private String password;
     private String email;
+    private String avatar;
     private String phone;
     private Double longitude;
     private Double latitude;
@@ -46,6 +47,7 @@ public class CustomerProfileEntity {
         entity.setName(customerProfile.getName());
         entity.setPassword(customerProfile.getPassword());
         entity.setEmail(customerProfile.getEmail());
+        entity.setAvatar(customerProfile.getAvatar());
         entity.setPhone(customerProfile.getPhone().orElse(null));
         entity.setLongitude(customerProfile.getLongitude().orElse(null));
         entity.setLatitude(customerProfile.getLatitude().orElse(null));
@@ -57,6 +59,7 @@ public class CustomerProfileEntity {
         entity.setEmail(entity.getEmail());
         entity.setPassword(entity.getPassword());
         entity.setPhone(entity.getPhone());
+        entity.setAvatar(entity.getAvatar());
         entity.setLongitude(entity.getLongitude());
         entity.setLatitude(entity.getLatitude());
         entity.setPostedListings(entity.getPostedListings());
@@ -68,8 +71,9 @@ public class CustomerProfileEntity {
                                                  .id(this.id)
                                                  .name(this.name)
                                                  .email(this.email)
+                                                 .avatar(this.avatar)
                                                  .password(this.password)
-                                                 .phone(Optional.of(this.phone))
+                                                 .phone(Optional.ofNullable(this.phone))
                                                  .longitude(Optional.ofNullable(this.longitude))
                                                  .latitude(Optional.ofNullable(this.latitude))
                                                  .build();
@@ -81,7 +85,7 @@ public class CustomerProfileEntity {
                              .postedListingIds(Optional.of(listingIds))
                              .build();
         }
-        if (this.starredListings != null) {
+        if (this.starredListings != null){
             List<String> starredListingIds = this.starredListings.stream()
                                                                  .map(ListingEntity::getId)
                                                                  .collect(toList());
