@@ -5,7 +5,7 @@ import domain.listing.ListingService;
 import domain.profile.CustomerProfile;
 import domain.profile.CustomerProfileService;
 import infrastructure.dto.ApiResponse;
-import infrastructure.dto.in.listing.ListingPageDto;
+import infrastructure.dto.in.listing.PageDto;
 import infrastructure.dto.in.listing.StarListingDto;
 import infrastructure.dto.in.profile.GetCustomerListingsDto;
 import infrastructure.dto.out.listing.ListingWithCustomerInfoDto;
@@ -114,17 +114,17 @@ public class CustomerListingResources {
 
     @POST
     @Path("/get-listing-page")
-    public Response getListingByPage(ListingPageDto listingPageDto) {
+    public Response getListingByPage(PageDto pageDto) {
         ApiResponse<ListingPageDetailsDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
 
-        if (listingPageDto.page < 0 || (listingPageDto.pageSize.isPresent() && listingPageDto.pageSize.get() < 0)) {
+        if (pageDto.page < 0 || (pageDto.pageSize.isPresent() && pageDto.pageSize.get() < 0)) {
             response.setMessage(Optional.of("Page number and page size cannot be negative."));
             response.setCode(4001);
             return Response.ok(response).build();
         }
         List<ListingWithCustomerInfoDto> listingAndCustomerDetails
-                = listingService.getListingAndCustomerByPage(listingPageDto.page,
-                                                             listingPageDto.pageSize.orElse(20))
+                = listingService.getListingAndCustomerByPage(pageDto.page,
+                                                             pageDto.pageSize.orElse(20))
                                 .stream()
                                 .map(ListingWithCustomerInfoDto::fromDomain)
                                 .toList();

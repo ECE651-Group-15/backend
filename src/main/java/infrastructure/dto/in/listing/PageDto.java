@@ -7,7 +7,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Builder
-public class ListingPageDto {
+public class PageDto {
     public final Integer page;
     public final Optional<Integer> pageSize;
 }
