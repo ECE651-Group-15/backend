@@ -16,10 +16,10 @@ public class RuntimeExceptionMapper implements ExceptionMapper<RuntimeException>
     public Response toResponse(RuntimeException e) {
         String message = e.getMessage();
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.of(message),
-                500,
+                4001,
                 Optional.empty());
 
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        return Response.status(Response.Status.OK)
                 .entity(response)
                 .type(MediaType.APPLICATION_JSON)
                 .build();

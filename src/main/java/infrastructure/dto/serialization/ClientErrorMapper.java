@@ -21,7 +21,7 @@ public class ClientErrorMapper implements ExceptionMapper<BadRequestException> {
                 Optional.empty());
 
 
-        return Response.status(Response.Status.BAD_REQUEST)
+        return Response.status(Response.Status.OK)
                 .entity(response)
                 .type(MediaType.APPLICATION_JSON)
                 .build();
