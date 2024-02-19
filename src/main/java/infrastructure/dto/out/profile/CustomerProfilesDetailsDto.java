@@ -11,6 +11,7 @@ import java.util.Optional;
 public record CustomerProfilesDetailsDto(String id,
                                          String name,
                                          String email,
+                                         String avatar,
                                          Optional<String> phone,
                                          Optional<Double> longitude,
                                          Optional<Double> latitude,
@@ -21,6 +22,7 @@ public record CustomerProfilesDetailsDto(String id,
                                          .id(customerProfile.getId())
                                          .name(customerProfile.getName())
                                          .email(customerProfile.getEmail())
+                                         .avatar(customerProfile.getAvatar())
                                          .phone(customerProfile.getPhone())
                                          .longitude(customerProfile.getLongitude())
                                          .latitude(customerProfile.getLatitude())

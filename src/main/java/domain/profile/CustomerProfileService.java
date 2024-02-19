@@ -1,5 +1,6 @@
 package domain.profile;
 
+import domain.MD5Util;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
 import infrastructure.sql.entity.CustomerProfileEntity;
@@ -33,6 +34,7 @@ public class CustomerProfileService {
                                                          .name(createCustomerProfile.getName())
                                                          .password(createCustomerProfile.getPassword())
                                                          .email(createCustomerProfile.getEmail())
+                                                         .avatar(MD5Util.md5Hex(createCustomerProfile.getEmail()))
                                                          .phone(createCustomerProfile.getPhone())
                                                          .longitude(createCustomerProfile.getLongitude())
                                                          .latitude(createCustomerProfile.getLatitude())
