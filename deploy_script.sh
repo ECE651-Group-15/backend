@@ -9,6 +9,10 @@ export DB_USERNAME=$DB_USERNAME
 export DB_PASSWORD=$DB_PASSWORD
 export DB_NAME=$DB_NAME
 
+echo "DB username: $DB_USERNAME"
+echo "DB password: $DB_PASSWORD"
+echo "DB name: $DB_NAME"
+
 pkill -f quarkus-run.jar
 sleep 5
 
