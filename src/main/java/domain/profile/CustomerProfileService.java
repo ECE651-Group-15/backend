@@ -3,6 +3,7 @@ package domain.profile;
 import domain.MD5Util;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
+import infrastructure.result.DeleteCustomerResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -84,15 +85,30 @@ public class CustomerProfileService {
         }
     }
 
-    public Optional<CustomerProfile> deleteCustomerProfile(String customerProfileId) {
+    public DeleteCustomerResult deleteCustomerProfile(String customerProfileId) {
+        DeleteCustomerResult deleteCustomerResult = DeleteCustomerResult.builder()
+                                                                        .hasCreatedListings(false)
+                                                                        .deletedCustomerProfile(Optional.empty())
+                                                                        .build();
         Optional<CustomerProfile> existedCustomer = getCustomerProfile(customerProfileId);
-        if (existedCustomer.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return customerProfileRepository.deleteCustomerProfile(existedCustomer.map(CustomerProfileEntity::fromDomain)
-                                                                                  .get())
-                                            .map(CustomerProfileEntity::toDomain);
+        if (existedCustomer.isPresent()) {
+            deleteCustomerResult = deleteCustomerResult.toBuilder()
+                                                       .deletedCustomerProfile(existedCustomer)
+                                                       .build();
+            if (existedCustomer.get().getPostedListingIds().isPresent()
+                    && !existedCustomer.get().getPostedListingIds().get().isEmpty()) {
+                deleteCustomerResult = deleteCustomerResult.toBuilder()
+                                                           .hasCreatedListings(true)
+                                                           .build();
+                return deleteCustomerResult;
+            }
+            deleteCustomerResult.toBuilder()
+                                .deletedCustomerProfile(customerProfileRepository.deleteCustomerProfile(
+                                                                                         existedCustomer.map(CustomerProfileEntity::fromDomain)
+                                                                                                        .get())
+                                                                                 .map(CustomerProfileEntity::toDomain));
         }
+        return deleteCustomerResult;
     }
 
 
