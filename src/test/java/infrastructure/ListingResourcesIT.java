@@ -9,10 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 @QuarkusTest
 public class ListingResourcesIT {
     private String customerId;
+    private String listingId;
     private final String VALID_LISTING_TEMPLATE = """
             {
               "title": "Vintage Record Player",
@@ -44,8 +46,20 @@ public class ListingResourcesIT {
                                 .then()
                                 .statusCode(200).extract()
                                 .path("data.id");
+        createListing();
     }
-
+    private void createListing() {
+        String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+        listingId = RestAssured.given()
+                .contentType("application/json")
+                .body(validListing)
+                .when().post("/v1/api/listings/create-listing")
+                .then()
+                .statusCode(200)
+                .body("data.customerId", is(customerId))
+                .extract()
+                .path("data.id");
+    }
     @AfterEach
     public void tearDown() {
         RestAssured.given()
@@ -90,4 +104,23 @@ public class ListingResourcesIT {
                    .body("code", is(4001))
                    .body("message", containsString("No enum constant"));
     }
+    @Test
+    public void getListing_whenListingDoesNotExist_returnsError() {
+        RestAssured.given()
+                .when().post("/v1/api/listings/get-listing/non-existent-id")
+                .then()
+                .statusCode(200)
+                .body("code", is(4001))
+                .body("message", containsString("Cannot find listing with id non-existent-id."));
+    }
+    @Test
+    public void getListing_whenListingExists_returnsListingDetails() {
+        RestAssured.given()
+                .when().post("/v1/api/listings/get-listing/" + listingId)
+                .then()
+                .statusCode(200)
+                .body("data.id", is(listingId))
+                .body("data.customerId", is(customerId));
+    }
+
 }
