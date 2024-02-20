@@ -1,6 +1,4 @@
 #!/bin/bash
-source ~/env.sh
-
 export MAVEN_HOME=/opt/apache-maven-3.9.6
 export PATH=$PATH:$MAVEN_HOME/bin
 
@@ -16,7 +14,5 @@ cd /home/ubuntu/backend
 ./mvnw package
 
 nohup java -jar target/quarkus-app/quarkus-run.jar > app.log 2>&1 &
-
-rm ~/env.sh
 
 echo "Deployment completed."

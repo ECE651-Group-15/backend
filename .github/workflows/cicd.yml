@@ -22,11 +22,11 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "
-          echo 'export DB_USERNAME=\"${{ secrets.DB_USERNAME }}\"' > env.sh
-          echo 'export DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"' >> env.sh
-          echo 'export DB_NAME=\"${{ secrets.DB_NAME }}\"' >> env.sh
-          "
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} '
+          export DB_USERNAME="${{ secrets.DB_USERNAME }}";
+          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}";
+          export DB_NAME="${{ secrets.DB_NAME }}";
           
-          scp -i ~/.ssh/id_rsa ./deploy_script.sh ubuntu@${{ secrets.EC2_HOST }}:/tmp/deploy_script.sh
+          source /path/to/your/deploy_script.sh
+          '
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} 'bash -s' < /tmp/deploy_script.sh
