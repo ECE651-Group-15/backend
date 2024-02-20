@@ -1,6 +1,5 @@
 #!/bin/bash
-pwd
-source /home/ubuntu/.bashrc
+source .bashrc
 
 pkill -f quarkus-run.jar
 sleep 5
