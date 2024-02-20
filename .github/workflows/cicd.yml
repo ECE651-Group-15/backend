@@ -14,11 +14,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up SSH
-        env:
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-
         run: |
           mkdir -p ~/.ssh/
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
@@ -27,4 +22,11 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} 'bash -s' < deploy_script.sh
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "
+          echo 'export DB_USERNAME=\"${{ secrets.DB_USERNAME }}\"' > env.sh
+          echo 'export DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"' >> env.sh
+          echo 'export DB_NAME=\"${{ secrets.DB_NAME }}\"' >> env.sh
+          "
+          
+          scp -i ~/.ssh/id_rsa ./deploy_script.sh ubuntu@${{ secrets.EC2_HOST }}:/tmp/deploy_script.sh
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} 'bash -s' < /tmp/deploy_script.sh
