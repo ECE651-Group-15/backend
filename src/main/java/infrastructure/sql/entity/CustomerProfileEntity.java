@@ -85,12 +85,22 @@ public class CustomerProfileEntity {
                              .postedListingIds(Optional.of(listingIds))
                              .build();
         }
+        if (this.postedListings == null) {
+            profile = profile.toBuilder()
+                             .postedListingIds(Optional.of(List.of()))
+                             .build();
+        }
         if (this.starredListings != null){
             List<String> starredListingIds = this.starredListings.stream()
                                                                  .map(ListingEntity::getId)
                                                                  .collect(toList());
             profile = profile.toBuilder()
                              .starredListingIds(Optional.of(starredListingIds))
+                             .build();
+        }
+        if (this.starredListings == null) {
+            profile = profile.toBuilder()
+                             .starredListingIds(Optional.of(List.of()))
                              .build();
         }
         return profile;
