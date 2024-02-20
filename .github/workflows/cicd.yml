@@ -28,5 +28,5 @@ jobs:
           export DB_NAME="${{ secrets.DB_NAME }}";
           
           source /home/ubuntu/backend/deploy_script.sh'
-          '
+        
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} 'bash -s' < /tmp/deploy_script.sh
