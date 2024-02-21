@@ -1,6 +1,7 @@
 package infrastructure.sql;
 
 import domain.listing.ListingRepository;
+import domain.listing.UpdateListing;
 import infrastructure.sql.entity.ListingEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -42,8 +43,21 @@ public class PanacheListingRepository implements ListingRepository, PanacheRepos
 
     @Override
     @Transactional
-    public Optional<ListingEntity> updateListing(ListingEntity listingEntity) {
-        ListingEntity.updateFromEntity(listingEntity);
+    public Optional<ListingEntity> updateListing(UpdateListing updateListing) {
+        Optional<ListingEntity> listingEntityOptional = getListing(updateListing.getId());
+        if (listingEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        ListingEntity listingEntity = listingEntityOptional.get();
+        listingEntity.setTitle(updateListing.getTitle());
+        listingEntity.setDescription(updateListing.getDescription());
+        updateListing.getPrice().ifPresent(listingEntity::setPrice);
+        listingEntity.setLongitude(updateListing.getLongitude());
+        listingEntity.setLatitude(updateListing.getLatitude());
+        listingEntity.setCategory(updateListing.getCategory());
+        listingEntity.setStatus(updateListing.getStatus());
+        listingEntity.setImages(updateListing.getImages());
+        listingEntity.setUpdatedAt(System.currentTimeMillis());
         return Optional.of(listingEntity);
     }
 

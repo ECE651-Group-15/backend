@@ -4,6 +4,7 @@ import domain.MD5Util;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
 import infrastructure.result.DeleteCustomerResult;
+import infrastructure.result.UpdateCustomerProfileResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -24,12 +25,12 @@ public class CustomerProfileService {
     ListingRepository listingRepository;
 
     public Optional<CustomerProfile> createProfile(CreateCustomerProfile createCustomerProfile) {
+        validateProfile(createCustomerProfile);
         Optional<CustomerProfile> existedCustomer = customerProfileRepository.getCustomerProfileByEmail(createCustomerProfile.getEmail())
                                                                              .map(CustomerProfileEntity::toDomain);
         if (existedCustomer.isPresent()) {
             return Optional.empty();
         }
-        validateProfile(createCustomerProfile);
         CustomerProfile customerProfile = CustomerProfile.builder()
                                                          .id(UUID.randomUUID().toString())
                                                          .name(createCustomerProfile.getName())
@@ -50,8 +51,11 @@ public class CustomerProfileService {
     private void validateProfile(CreateCustomerProfile createCustomerProfile) {
         if (createCustomerProfile.getEmail() == null
                 || createCustomerProfile.getEmail().trim().isEmpty()
-                || createCustomerProfile.getName() == null || createCustomerProfile.getName().trim().isEmpty()) {
-            throw new BadRequestException("Email and name are required for a profile");
+                || createCustomerProfile.getName() == null
+                || createCustomerProfile.getName().trim().isEmpty()
+                || createCustomerProfile.getPassword() == null
+                || createCustomerProfile.getPassword().trim().isEmpty()) {
+            throw new BadRequestException("Email name, and password are required for a profile");
         }
     }
 
@@ -59,30 +63,30 @@ public class CustomerProfileService {
         return customerProfileRepository.getCustomerProfile(profileId).map(CustomerProfileEntity::toDomain);
     }
 
-    public Optional<CustomerProfile> updateCustomerProfile(UpdateCustomerProfile updateCustomerProfile) {
-        boolean verified = verifyUser(updateCustomerProfile.getId(),
-                                      updateCustomerProfile.getEmail(),
-                                      updateCustomerProfile.getPassword());
-        if (!verified) {
-            return Optional.empty();
+    @Transactional
+    public UpdateCustomerProfileResult updateCustomerProfile(UpdateCustomerProfile updateCustomerProfile) {
+        UpdateCustomerProfileResult updateCustomerProfileResult =
+                UpdateCustomerProfileResult.builder()
+                                           .customerNotFound(false)
+                                           .validationError(false)
+                                           .updatedCustomerProfile(Optional.empty())
+                                           .build();
+        Optional<CustomerProfileEntity> customerProfileEntity =
+                requireUser(updateCustomerProfile.getId(),
+                            updateCustomerProfile.getPassword());
+        System.out.println(customerProfileEntity);
+        if (customerProfileEntity.isEmpty()) {
+            updateCustomerProfileResult.setValidationError(true);
+            return updateCustomerProfileResult;
         }
-
-        Optional<CustomerProfile> existedCustomer = getCustomerProfile(updateCustomerProfile.getId());
-        if (existedCustomer.isEmpty()) {
-            return Optional.empty();
-        } else {
-            CustomerProfile customerProfile = existedCustomer.get();
-            customerProfile = customerProfile.toBuilder()
-                                             .email(updateCustomerProfile.getEmail())
-                                             .password(updateCustomerProfile.getPassword())
-                                             .name(updateCustomerProfile.getName())
-                                             .phone(updateCustomerProfile.getPhone())
-                                             .longitude(updateCustomerProfile.getLongitude())
-                                             .latitude(updateCustomerProfile.getLatitude())
-                                             .build();
-            return customerProfileRepository.updateCustomerProfile(CustomerProfileEntity.fromDomain(customerProfile))
-                                            .map(CustomerProfileEntity::toDomain);
+        Optional<CustomerProfile> customerProfile =
+                customerProfileRepository.updateCustomerProfile(updateCustomerProfile)
+                                         .map(CustomerProfileEntity::toDomain);
+        if (customerProfile.isEmpty()) {
+            updateCustomerProfileResult.setCustomerNotFound(true);
         }
+        updateCustomerProfileResult.setUpdatedCustomerProfile(customerProfile);
+        return updateCustomerProfileResult;
     }
 
     public DeleteCustomerResult deleteCustomerProfile(String customerProfileId) {
@@ -128,15 +132,17 @@ public class CustomerProfileService {
         if (!starredListings.contains(listingEntity)) {
             starredListings.add(listingEntity);
             customerProfileEntity.setStarredListings(starredListings);
-            customerProfileRepository.updateCustomerProfile(customerProfileEntity);
         }
         return customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
                                         .map(CustomerProfileEntity::toDomain);
     }
 
-    public boolean verifyUser(String id, String email, String password) {
-        Optional<CustomerProfile> customerProfile = customerProfileRepository.getCustomerProfile(id).map(CustomerProfileEntity::toDomain);
-        return customerProfile.map(profile -> profile.getEmail().equals(email) && profile.getPassword().equals(password)).orElse(false);
+    public Optional<CustomerProfileEntity> requireUser(String id, String password) {
+        Optional<CustomerProfile> customerProfile =
+                customerProfileRepository.getCustomerProfile(id)
+                                         .map(CustomerProfileEntity::toDomain);
+        return customerProfile.filter(profile -> profile.getPassword().equals(password))
+                              .map(CustomerProfileEntity::fromDomain);
     }
 
     public List<CustomerProfile> getCustomerProfileByPage(int page,

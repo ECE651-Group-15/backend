@@ -12,6 +12,7 @@ public class UpdateCustomerProfile {
     String email;
     String password;
     String name;
+    Optional<String> avatar;
     Optional<String> phone;
     Optional<Double> longitude;
     Optional<Double> latitude;
