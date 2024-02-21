@@ -54,18 +54,6 @@ public class CustomerProfileEntity {
         return entity;
     }
 
-    public static void updateFromEntity(CustomerProfileEntity entity) {
-        entity.setName(entity.getName());
-        entity.setEmail(entity.getEmail());
-        entity.setPassword(entity.getPassword());
-        entity.setPhone(entity.getPhone());
-        entity.setAvatar(entity.getAvatar());
-        entity.setLongitude(entity.getLongitude());
-        entity.setLatitude(entity.getLatitude());
-        entity.setPostedListings(entity.getPostedListings());
-        entity.setStarredListings(entity.getStarredListings());
-    }
-
     public CustomerProfile toDomain() {
         CustomerProfile profile = CustomerProfile.builder()
                                                  .id(this.id)

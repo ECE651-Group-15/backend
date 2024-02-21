@@ -1,6 +1,7 @@
 package domain.listing;
 
 import domain.profile.CustomerProfileRepository;
+import infrastructure.result.UpdateListingResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -8,7 +9,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +55,7 @@ public class ListingService {
         List<ListingEntity> postedListings = customerProfileEntity.get().getPostedListings();
         postedListings.add(listingEntity);
         customerProfileEntity.get().setPostedListings(postedListings);
-        customerProfileRepository.updateCustomerProfile(customerProfileEntity.get());
+//        customerProfileRepository.updateCustomerProfile(customerProfileEntity.get());
         listingRepository.save(listingEntity);
         return Optional.of(listingDetails);
     }
@@ -79,34 +79,26 @@ public class ListingService {
         return listingRepository.getListing(listingId).map(ListingEntity::toDomain);
     }
 
-    public Optional<ListingDetails> updateListing(UpdateListing updateListing) {
+    @Transactional
+    public UpdateListingResult updateListing(UpdateListing updateListing) {
         // TODO: add check customerId here, we shouldn't allow customer to update other customer's listing
+        UpdateListingResult updateResult = UpdateListingResult.builder()
+                                                              .customerNotFound(false)
+                                                              .listingNotFound(false)
+                                                              .updatedListing(Optional.empty())
+                                                              .build();
         Optional<CustomerProfileEntity> customerProfileEntity =
                 customerProfileRepository.getCustomerProfile(updateListing.getCustomerId());
         if (customerProfileEntity.isEmpty()) {
-            return Optional.empty();
+            updateResult.setCustomerNotFound(true);
         }
-
-        Optional<ListingDetails> existingListing = getListing(updateListing.getId());
-        if (existingListing.isEmpty()) {
-            return Optional.empty();
+        Optional<ListingEntity> listingEntityOptional = listingRepository.updateListing(updateListing);
+        if (listingEntityOptional.isEmpty()) {
+            updateResult.setListingNotFound(true);
         } else {
-            ListingDetails listingDetails = existingListing.get();
-            listingDetails = listingDetails.toBuilder()
-                                           .title(updateListing.getTitle())
-                                           .description(updateListing.getDescription())
-                                           .price(updateListing.getPrice())
-                                           .latitude(updateListing.getLatitude())
-                                           .longitude(updateListing.getLongitude())
-                                           .category(updateListing.getCategory())
-                                           .status(updateListing.getStatus())
-                                           .images(updateListing.getImages())
-                                           .updatedAt(Instant.now().toEpochMilli())
-                                           .build();
-            ListingEntity listingEntity = ListingEntity.fromDomain(listingDetails,
-                                                                   customerProfileEntity.get());
-            return listingRepository.updateListing(listingEntity).map(ListingEntity::toDomain);
+            updateResult.setUpdatedListing(listingEntityOptional.map(ListingEntity::toDomain));
         }
+        return updateResult;
     }
 
     @Transactional
@@ -124,7 +116,9 @@ public class ListingService {
             List<ListingEntity> postedListings = customerProfileEntity.get().getPostedListings();
             postedListings.removeIf(listingEntity -> listingEntity.getId().equals(listingId));
             customerProfileEntity.get().setPostedListings(postedListings);
-            customerProfileRepository.updateCustomerProfile(customerProfileEntity.get());
+            List<ListingEntity> starredListings = customerProfileEntity.get().getStarredListings();
+            starredListings.removeIf(listingEntity -> listingEntity.getId().equals(listingId));
+            customerProfileEntity.get().setStarredListings(starredListings);
 
             ListingEntity listingEntity = ListingEntity.fromDomain(existingListing.get(),
                                                                    customerProfileEntity.get());
@@ -149,7 +143,6 @@ public class ListingService {
         if (!customersWhoStarred.contains(customerProfileEntity)) {
             customersWhoStarred.add(customerProfileEntity);
             listingEntity.setCustomersWhoStarred(customersWhoStarred);
-            listingRepository.updateListing(listingEntity);
         }
 
         return listingRepository.getListing(starListing.getListingId())

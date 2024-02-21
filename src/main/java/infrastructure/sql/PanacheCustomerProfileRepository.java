@@ -1,6 +1,7 @@
 package infrastructure.sql;
 
 import domain.profile.CustomerProfileRepository;
+import domain.profile.UpdateCustomerProfile;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
@@ -36,8 +37,19 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
 
     @Override
     @Transactional
-    public Optional<CustomerProfileEntity> updateCustomerProfile(CustomerProfileEntity customerProfileEntity) {
-        CustomerProfileEntity.updateFromEntity(customerProfileEntity);
+    public Optional<CustomerProfileEntity> updateCustomerProfile(UpdateCustomerProfile updateCustomerProfile) {
+//        Optional<CustomerProfileEntity> customerProfileEntityOptional = getCustomerProfile(updateCustomerProfile.getId());
+//        if (customerProfileEntityOptional.isEmpty()) {
+//            return Optional.empty();
+//        }
+        CustomerProfileEntity customerProfileEntity = getCustomerProfile(updateCustomerProfile.getId()).get();
+
+        customerProfileEntity.setName(updateCustomerProfile.getName());
+        customerProfileEntity.setPassword(updateCustomerProfile.getPassword());
+        customerProfileEntity.setPhone(updateCustomerProfile.getPhone().orElse(customerProfileEntity.getPhone()));
+        customerProfileEntity.setLongitude(updateCustomerProfile.getLongitude().orElse(customerProfileEntity.getLongitude()));
+        customerProfileEntity.setLatitude(updateCustomerProfile.getLatitude().orElse(customerProfileEntity.getLatitude()));
+
         return Optional.of(customerProfileEntity);
     }
 

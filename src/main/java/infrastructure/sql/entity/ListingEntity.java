@@ -75,22 +75,6 @@ public class ListingEntity {
         return entity;
     }
 
-    public static void updateFromEntity(ListingEntity entity) {
-        entity.setId(entity.getId());
-        entity.setTitle(entity.getTitle());
-        entity.setDescription(entity.getDescription());
-        entity.setPrice(entity.getPrice());
-        entity.setLongitude(entity.getLongitude());
-        entity.setLatitude(entity.getLatitude());
-        entity.setCategory(entity.getCategory());
-        entity.setStatus(entity.getStatus());
-        entity.setImages(entity.getImages());
-        entity.setCreatedAt(entity.getCreatedAt());
-        entity.setUpdatedAt(entity.getUpdatedAt());
-        entity.setCustomersWhoStarred(entity.getCustomersWhoStarred());
-        entity.setCustomerProfile(entity.getCustomerProfile());
-    }
-
     public ListingDetails toDomain() {
         return ListingDetails.builder()
                              .id(this.id)
