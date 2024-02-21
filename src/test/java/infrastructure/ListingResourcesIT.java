@@ -62,10 +62,24 @@ public class ListingResourcesIT {
     }
     @AfterEach
     public void tearDown() {
+        System.out.println("Deleting customer profile with ID: " + customerId);
+        RestAssured.given()
+                   .when().post("v1/api/listings/delete-listing/" + listingId)
+                   .then()
+                   .statusCode(200);
+
         RestAssured.given()
                    .when().post("/v1/api/profile/delete-profile/" + customerId)
                    .then()
-                   .statusCode(200);
+                   .statusCode(200)
+                   .log().all()
+                   .body("data.id", is(customerId));
+        RestAssured.given()
+                   .when().post("/v1/api/profile/get-profile/" + customerId)
+                   .then()
+                   .statusCode(200)
+                   .log().all()
+                   .body("code", is(4001));
     }
 
     @Test
@@ -83,13 +97,14 @@ public class ListingResourcesIT {
     @Test
     public void createListing_whenCustomerProfileExists_createsListing() {
         String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
-        RestAssured.given()
-                   .contentType("application/json")
-                   .body(validListing)
-                   .when().post("/v1/api/listings/create-listing")
-                   .then()
-                   .statusCode(200)
-                   .body("data.customerId", is(customerId));
+        listingId = RestAssured.given()
+                               .contentType("application/json")
+                               .body(validListing)
+                               .when().post("/v1/api/listings/create-listing")
+                               .then()
+                               .statusCode(200)
+                               .body("data.customerId", is(customerId))
+                               .extract().path("data.id");
     }
 
     @Test
