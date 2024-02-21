@@ -8,6 +8,7 @@ import infrastructure.dto.in.profile.CreateCustomerProfileDto;
 import infrastructure.dto.in.profile.UpdateCustomerProfileDto;
 import infrastructure.dto.out.profile.CustomerProfilePageDto;
 import infrastructure.dto.out.profile.CustomerProfilesDetailsDto;
+import infrastructure.result.DeleteCustomerResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -89,12 +90,16 @@ public class CustomerProfileResources {
                                                                              200,
                                                                              Optional.empty());
 
-        Optional<CustomerProfile> deletedCustomerProfile = customerProfileService.deleteCustomerProfile(customerId);
-        if (deletedCustomerProfile.isEmpty()) {
+        DeleteCustomerResult deleteCustomerResult = customerProfileService.deleteCustomerProfile(customerId);
+        if (deleteCustomerResult.deletedCustomerProfile().isEmpty()) {
             response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
             response.setCode(4001);
-        } else {
-            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deletedCustomerProfile.get())));
+        } else if (deleteCustomerResult.hasCreatedListings()) {
+            response.setMessage(Optional.of("Customer with id " + customerId + " has created listings. Cannot delete."));
+            response.setCode(4001);
+        }
+        else {
+            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deleteCustomerResult.deletedCustomerProfile().get())));
         }
 
         return Response.ok(response).build();
