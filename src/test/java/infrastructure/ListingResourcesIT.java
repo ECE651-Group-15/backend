@@ -49,17 +49,22 @@ public class ListingResourcesIT {
                 {
                   "name": "John Does",
                   "email": "john.doe@example.com",
-                  "phone": "1234567890"
+                  "password": "1234567890"
                 }
                 """;
 
         customerId = RestAssured.given()
+                .log().all()
+
                                 .contentType("application/json")
                                 .body(customerProfile)
                                 .when().post("/v1/api/profile/create-profile")
                                 .then()
+                .log().all()
                                 .statusCode(200).extract()
                                 .path("data.id");
+        System.out.println("------------------------------------------------");
+        System.out.println("customer ID: " + customerId);
     }
 
     private void createListing() {
@@ -169,7 +174,7 @@ public class ListingResourcesIT {
                    .when().post("/v1/api/listings/update-listing")
                    .then()
                    .statusCode(200)
-                     .log().all()
+                   .log().all()
                    .body("code", is(4001))
                    .body("message", containsString("Cannot update listing with id non existing listingID as listing was not found with given ID."));
     }
@@ -189,5 +194,32 @@ public class ListingResourcesIT {
                 .body("data.description",containsString("NewDescription"));
 
     }
+    @Test
+    public void deleteListing_whenListingNotExists_ReturnErrorMessage(){
+        createListing();
+        RestAssured.given()
+                .when().post("/v1/api/listings/delete-listing/non-existent-id")
+                .then()
+                .statusCode(200)
+                .body("code", is(4001))
+                .body("message", containsString("Cannot delete listing with id non-existent-id as listing was not found with given ID."));
 
+    }
+    @Test
+    public void deleteListing_whenListingExists_ReturnListingDetails(){
+        createListing();
+        String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+        RestAssured.given()
+                .when().post("/v1/api/listings/delete-listing/"+listingId)
+                .then()
+                .statusCode(200)
+                .body("data.id", is(listingId))
+                .body("data.customerId", is(customerId));
+        RestAssured.given()
+                .when().post("/v1/api/listings/get-listing/"+listingId)
+                .then()
+                .statusCode(200)
+                .body("code", is(4001))
+                .body("message", containsString("Cannot find listing with id " + listingId));
+    }
 }
