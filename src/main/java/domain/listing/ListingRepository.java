@@ -8,9 +8,7 @@ import java.util.Optional;
 public interface ListingRepository {
     void save(ListingEntity listingEntity);
     Optional<ListingEntity> getListing(String id);
-
     List<ListingEntity> getListingPage(int pageNumber, int pageSizeIn);
-
-    Optional<ListingEntity> updateListing(ListingEntity listing);
+    Optional<ListingEntity> updateListing(UpdateListing updateListing);
     Optional<ListingEntity> deleteListing(ListingEntity listingEntity);
 }

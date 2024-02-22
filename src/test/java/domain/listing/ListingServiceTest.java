@@ -1,16 +1,15 @@
 package domain.listing;
 
 import domain.profile.CustomerProfile;
+import domain.profile.CustomerProfileRepository;
+import infrastructure.result.UpdateListingResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import io.quarkus.test.InjectMock;
-import io.quarkus.test.Mock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
-import org.gradle.internal.impldep.javax.annotation.meta.When;
 import org.junit.jupiter.api.Test;
-import domain.profile.CustomerProfileRepository;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -19,11 +18,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 public class ListingServiceTest {
@@ -278,9 +281,8 @@ public class ListingServiceTest {
                 .longitude(0.0)
                 .build();
         Mockito.when(customerProfileRepository.getCustomerProfile("customerID")).thenReturn(Optional.empty());
-        Optional<ListingDetails> result = listingService.updateListing(updateListing);
-        assertEquals(Optional.empty(), result);
-
+        UpdateListingResult result = listingService.updateListing(updateListing);
+        assertEquals(true, result.isCustomerNotFound());
     }
 
     @Test
@@ -299,8 +301,8 @@ public class ListingServiceTest {
                 .build();
         when(customerProfileRepository.getCustomerProfile("customerId")).thenReturn(Optional.of(new CustomerProfileEntity()));
         when(listingService.getListing("listingId")).thenReturn(Optional.empty());
-        Optional<ListingDetails> result = listingService.updateListing(updateListing);
-        assertEquals(Optional.empty(), result);
+        UpdateListingResult result = listingService.updateListing(updateListing);
+        assertEquals(true, result.isListingNotFound());
     }
 
     @Test
@@ -347,9 +349,9 @@ public class ListingServiceTest {
         CustomerProfileEntity mockProfile = Mockito.mock(CustomerProfileEntity.class);
         when(customerProfileRepository.getCustomerProfile("customerId")).thenReturn(Optional.of(mockProfile));
         when(listingService.getListing("listingId")).thenReturn(Optional.of(currentlistingDetails));
-        Optional<ListingDetails> result = listingService.updateListing(updateListing);
-        if (result.isPresent()){
-            assertEquals(updatedlistingDetails, result.get());
+        UpdateListingResult result = listingService.updateListing(updateListing);
+        if (result.getUpdatedListing().isPresent()){
+            assertEquals(updatedlistingDetails, result.getUpdatedListing().get());
         }
 
     }

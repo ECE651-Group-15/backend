@@ -8,6 +8,8 @@ import infrastructure.dto.in.profile.CreateCustomerProfileDto;
 import infrastructure.dto.in.profile.UpdateCustomerProfileDto;
 import infrastructure.dto.out.profile.CustomerProfilePageDto;
 import infrastructure.dto.out.profile.CustomerProfilesDetailsDto;
+import infrastructure.result.DeleteCustomerResult;
+import infrastructure.result.UpdateCustomerProfileResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -67,17 +69,19 @@ public class CustomerProfileResources {
     @POST
     @Path("/update-profile")
     public Response updateCustomerProfile(UpdateCustomerProfileDto updateCustomerProfileDto) {
-        Optional<CustomerProfile> updatedCustomerProfile =
+        UpdateCustomerProfileResult updateCustomerProfileResult =
                 customerProfileService.updateCustomerProfile(updateCustomerProfileDto.toDomain());
         ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
                                                                              200,
                                                                              Optional.empty());
-        if (updatedCustomerProfile.isEmpty()) {
+        if (updateCustomerProfileResult.isCustomerNotFound()) {
             response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
             response.setCode(4001);
+        } else if (updateCustomerProfileResult.isValidationError()) {
+            response.setMessage(Optional.of("Your provided information (id and password) is not valid. Please check and try again."));
+            response.setCode(4001);
         } else {
-            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(updatedCustomerProfile.get())));
-
+            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(updateCustomerProfileResult.getUpdatedCustomerProfile().get())));
         }
         return Response.ok(response).build();
     }
@@ -89,12 +93,16 @@ public class CustomerProfileResources {
                                                                              200,
                                                                              Optional.empty());
 
-        Optional<CustomerProfile> deletedCustomerProfile = customerProfileService.deleteCustomerProfile(customerId);
-        if (deletedCustomerProfile.isEmpty()) {
+        DeleteCustomerResult deleteCustomerResult = customerProfileService.deleteCustomerProfile(customerId);
+        if (deleteCustomerResult.deletedCustomerProfile().isEmpty()) {
             response.setMessage(Optional.of("Cannot find customer with id " + customerId + ", as it's not found."));
             response.setCode(4001);
-        } else {
-            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deletedCustomerProfile.get())));
+        } else if (deleteCustomerResult.hasCreatedListings()) {
+            response.setMessage(Optional.of("Customer with id " + customerId + " has created listings. Cannot delete."));
+            response.setCode(4001);
+        }
+        else {
+            response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(deleteCustomerResult.deletedCustomerProfile().get())));
         }
 
         return Response.ok(response).build();

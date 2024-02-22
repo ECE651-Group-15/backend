@@ -82,6 +82,7 @@ public class ListingResourcesIT {
 
     @AfterEach
     public void tearDown() {
+        System.out.println("Deleting customer profile with ID: " + customerId);
         RestAssured.given()
                    .when().post("v1/api/listings/delete-listing/" + listingId)
                    .then()

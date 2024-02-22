@@ -6,6 +6,7 @@ import infrastructure.dto.ApiResponse;
 import infrastructure.dto.in.listing.CreateListingDto;
 import infrastructure.dto.in.listing.UpdateListingDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
+import infrastructure.result.UpdateListingResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -60,15 +61,17 @@ public class ListingResources {
     @POST
     @Path("/update-listing")
     public Response updateListing(UpdateListingDto updateListingDto) {
-        Optional<ListingDetails> updatedListing = listingService.updateListing(updateListingDto.toDomain());
+        UpdateListingResult updateListingResult = listingService.updateListing(updateListingDto.toDomain());
         ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
                                                                     200,
                                                                     Optional.empty());
-        if (updatedListing.isPresent()) {
-            response.setData(Optional.of(ListingDetailsDto.fromDomain(updatedListing.get())));
-        } else {
-            response.setMessage(
-                    Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
+        if (updateListingResult.getUpdatedListing().isPresent()) {
+            response.setData(Optional.of(ListingDetailsDto.fromDomain(updateListingResult.getUpdatedListing().get())));
+        } else if (updateListingResult.isCustomerNotFound()) {
+            response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as customer was not found with given ID."));
+            response.setCode(4001);
+        } else if (updateListingResult.isListingNotFound()) {
+            response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
             response.setCode(4001);
         }
         return Response.ok(response).build();

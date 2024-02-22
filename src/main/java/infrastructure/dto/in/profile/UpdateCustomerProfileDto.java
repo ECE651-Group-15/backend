@@ -10,6 +10,7 @@ public record UpdateCustomerProfileDto(String id,
                                        String name,
                                        String password,
                                        String email,
+                                       Optional<String> avatar,
                                        Optional<String> phone,
                                        Optional<Double> longitude,
                                        Optional<Double> latitude) {
@@ -19,6 +20,7 @@ public record UpdateCustomerProfileDto(String id,
                                     .name(name)
                                     .password(password)
                                     .email(email)
+                                    .avatar(avatar)
                                     .phone(phone)
                                     .longitude(longitude)
                                     .latitude(latitude)
