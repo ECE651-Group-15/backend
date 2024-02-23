@@ -55,6 +55,11 @@ public class CustomerListingResourcesIT {
                 
             }
             """;
+    private final String VALID_GET_LISTING_PAGE_TEMPLATE= """
+            {
+                "page": "%d"
+            }
+            """;
 
     private void deleteCustomerProfile(String customerId) {
         RestAssured.given()
@@ -370,6 +375,8 @@ public class CustomerListingResourcesIT {
                 .statusCode(200)
                 .body("data.starredListings[0].id",is(listingId))
                 .body("data.starredListings[0].customerId",is(customerId));
+
+
         RestAssured.given()
                 .when().post("v1/api/listings/delete-listing/" + listingId)
                 .then()
@@ -377,8 +384,83 @@ public class CustomerListingResourcesIT {
         deleteCustomerProfile(customerId);
 
     }
+    @Test
+    public void GetListingByPage_pageNumberIsNegative_ReturnErrorMessage(){
+        String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE,-1);
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validGetListingByPage)
+                .when()
+                .post("/v1/api/listing-profile/get-listing-page")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("code",is(4001))
+                .body("message",containsString("Page number and page size cannot be negative."));
+    }
+
+    @Test
+    public void GetListingByPage_NoListingsExist_ReturnErrorMessage(){
+        String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE,0);
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validGetListingByPage)
+                .when()
+                .post("/v1/api/listing-profile/get-listing-page")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("message",containsString("No listings found."));
+    }
+
+    @Test
+    public void GetListingByPage_ListingsExist_ReturnListingDetails(){
+        String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, "123456");
+
+        String customerId = RestAssured.given()
+                .contentType("application/json")
+                .body(validProfile)
+                .when()
+                .post("/v1/api/profile/create-profile")
+                .then()
+                .statusCode(200)
+                .body("data.name", is("Nikola Tesla1"))
+                .extract().path("data.id");
+        System.out.println("customerId :" + customerId);
+
+        String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+
+        listingId = RestAssured.given()
+                .contentType("application/json")
+                .body(validListing)
+                .when().post("/v1/api/listings/create-listing")
+                .then()
+                .statusCode(200)
+                .body("data.customerId", is(customerId))
+                .extract()
+                .path("data.id");
+        System.out.println("listingId :" + listingId);
+
+        String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE,0);
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validGetListingByPage)
+                .when()
+                .post("/v1/api/listing-profile/get-listing-page")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("data.listingDetails[0].listingDetails.id",is(listingId))
+                .body("data.listingDetails[0].customerProfilesDetails.id",is(customerId));
+
+        RestAssured.given()
+                .when().post("v1/api/listings/delete-listing/" + listingId)
+                .then()
+                .statusCode(200);
+        deleteCustomerProfile(customerId);
 
 
+    }
 
 
 }
