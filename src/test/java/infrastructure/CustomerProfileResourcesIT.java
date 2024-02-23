@@ -1,5 +1,6 @@
 package infrastructure;
 
+import domain.listing.Category;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
@@ -31,12 +32,35 @@ public class CustomerProfileResourcesIT {
 			}
 			""";
 
+	private final String VALID_LISTING_TEMPLATE = """
+			{
+			  "title": "Vintage Record Player",
+			  "description": "1960s turntable in working condition. Includes a collection of jazz vinyl.",
+			  "price": 250,
+			  "longitude": -0.118092,
+			  "latitude": 51.509865,
+			  "category": "%s",
+			  "customerId": "%s",
+			  "status": "ACTIVE",
+			  "images": []
+			}
+			""";
+
 	private void deleteCustomerProfile(String customerId) {
 		RestAssured.given()
 				   .contentType("application/json")
 				   .when().post("/v1/api/profile/delete-profile/" + customerId)
 				   .then()
 				   .statusCode(200);
+	}
+
+	private void deleteListing(String listingId) {
+		RestAssured.given()
+				   .contentType("application/json")
+				   .when().post("/v1/api/listings/delete-listing/" + listingId)
+				   .then()
+				   .statusCode(200)
+				   .body("data.id", is(listingId));
 	}
 
 	@Test
@@ -213,5 +237,74 @@ public class CustomerProfileResourcesIT {
 				   .body("code", is(4001));
 
 		deleteCustomerProfile(customerId);
+	}
+
+	@Test
+	public void deleteCustomerProfile_whenCustomerHasPostedListings_doNotDeleteProfile() {
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, "123456");
+
+		String customerId = RestAssured.given()
+									   .contentType("application/json")
+									   .body(validProfile)
+									   .when().post("/v1/api/profile/create-profile")
+									   .then()
+									   .statusCode(200)
+									   .body("data.name", is("Nikola Tesla"))
+									   .extract().path("data.id");
+
+		String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+		String listingId = RestAssured.given()
+									  .contentType("application/json")
+									  .body(validListing)
+									  .when().post("/v1/api/listings/create-listing")
+									  .then()
+									  .statusCode(200)
+									  .body("data.customerId", is(customerId))
+									  .extract()
+									  .path("data.id");
+
+		RestAssured.given()
+				   .contentType("application/json")
+				   .when().post("/v1/api/profile/delete-profile/" + customerId)
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001))
+				   .body("message", containsString("Cannot delete"));
+
+		deleteListing(listingId);
+		deleteCustomerProfile(customerId);
+	}
+
+	@Test
+	public void deleteCustomerProfile_whenCustomerDoesExistWithNoPostedListing_deleteProfile() {
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, "123456");
+
+		String customerId = RestAssured.given()
+									   .contentType("application/json")
+									   .body(validProfile)
+									   .when().post("/v1/api/profile/create-profile")
+									   .then()
+									   .statusCode(200)
+									   .body("data.name", is("Nikola Tesla"))
+									   .extract().path("data.id");
+
+		RestAssured.given()
+				   .contentType("application/json")
+				   .when().post("/v1/api/profile/delete-profile/" + customerId)
+				   .then()
+				   .statusCode(200)
+				   .body("data.id", is(customerId));
+
+		deleteCustomerProfile(customerId);
+	}
+
+	@Test
+	public void deleteCustomerProfile_whenCustomerNotExist_promotesMessage() {
+		RestAssured.given()
+				   .contentType("application/json")
+				   .when().post("/v1/api/profile/delete-profile/" + "customerId")
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001));
 	}
 }
