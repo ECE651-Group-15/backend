@@ -74,7 +74,6 @@ public class CustomerProfileService {
         Optional<CustomerProfileEntity> customerProfileEntity =
                 requireUser(updateCustomerProfile.getId(),
                             updateCustomerProfile.getPassword());
-        System.out.println(customerProfileEntity);
         if (customerProfileEntity.isEmpty()) {
             updateCustomerProfileResult.setValidationError(true);
             return updateCustomerProfileResult;
