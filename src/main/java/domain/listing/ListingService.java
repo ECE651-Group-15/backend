@@ -149,6 +149,28 @@ public class ListingService {
                                 .map(ListingEntity::toDomain);
     }
 
+	@Transactional
+	public Optional<ListingDetails> unStarListing(StarListing starListing) {
+		Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
+		Optional<CustomerProfileEntity> customerProfileEntityOptional =
+				customerProfileRepository.getCustomerProfile(starListing.getCustomerId());
+
+		if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
+			return Optional.empty();
+		}
+		ListingEntity listingEntity = listingEntityOptional.get();
+		CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
+
+		List<CustomerProfileEntity> customersWhoStarred = listingEntity.getCustomersWhoStarred();
+		if (customersWhoStarred.contains(customerProfileEntity)) {
+			customersWhoStarred.remove(customerProfileEntity);
+			listingEntity.setCustomersWhoStarred(customersWhoStarred);
+		}
+
+		return listingRepository.getListing(starListing.getListingId())
+								.map(ListingEntity::toDomain);
+	}
+
     public List<ListingDetails> getListingPage(int page, Optional<Integer> pageSize, Optional<List<String>> listingIds) {
         if (listingIds.isEmpty()) {
             return List.of();

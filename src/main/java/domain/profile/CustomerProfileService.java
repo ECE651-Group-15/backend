@@ -137,6 +137,27 @@ public class CustomerProfileService {
                                         .map(CustomerProfileEntity::toDomain);
     }
 
+	@Transactional
+	public Optional<CustomerProfile> unStarListing(StarListing starListing) {
+		Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
+		Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
+				starListing.getCustomerId());
+
+		if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
+			return Optional.empty();
+		}
+		ListingEntity listingEntity = listingEntityOptional.get();
+		CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
+
+		List<ListingEntity> starredListings = customerProfileEntity.getStarredListings();
+		if (starredListings.contains(listingEntity)) {
+			starredListings.remove(listingEntity);
+			customerProfileEntity.setStarredListings(starredListings);
+		}
+		return customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
+										.map(CustomerProfileEntity::toDomain);
+	}
+
     public Optional<CustomerProfileEntity> requireUser(String id, String password) {
         Optional<CustomerProfile> customerProfile =
                 customerProfileRepository.getCustomerProfile(id)

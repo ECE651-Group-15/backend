@@ -56,6 +56,28 @@ public class CustomerListingResources {
         return Response.ok(response).build();
     }
 
+	@POST
+	@Path("/unstar-listing")
+	public Response unStarListingForCustomer(StarListingDto starListingDto) {
+		ApiResponse<ListingWithCustomerInfoDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
+
+		Optional<ListingDetails> listingDetails = listingService.unStarListing(starListingDto.toDomain());
+		Optional<CustomerProfile> customerProfile = customerProfileService.unStarListing(starListingDto.toDomain());
+		if (customerProfile.isEmpty()) {
+			response.setMessage(Optional.of("Cannot find customer with id " + starListingDto.customerId() + "."));
+			response.setCode(4001);
+			return Response.ok(response).build();
+		}
+		if (listingDetails.isEmpty()) {
+			response.setMessage(Optional.of("Cannot find listing with id " + starListingDto.listingId() + "."));
+			response.setCode(4001);
+			return Response.ok(response).build();
+		}
+
+		response.setData(Optional.of(ListingWithCustomerInfoDto.fromDomain(listingDetails.get(), customerProfile.get())));
+		return Response.ok(response).build();
+	}
+
     @POST
     @Path("/get-customer-posted-listings")
 
