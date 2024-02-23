@@ -118,6 +118,7 @@ public class ListingResourcesIT {
 							   .statusCode(200)
 							   .body("data.customerId", is(customerId))
 							   .extract().path("data.id");
+		System.out.println("listingId :" + listingId);
 	}
 
 	@Test
