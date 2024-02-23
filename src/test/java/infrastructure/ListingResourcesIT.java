@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.core.IsNull.notNullValue;
 
 @QuarkusTest
 public class ListingResourcesIT {
@@ -28,6 +27,21 @@ public class ListingResourcesIT {
               "images": []
             }
             """;
+    private final String VALID_UPDATE_LISTING_TEMPLATE = """
+
+            {
+              "id": "%s",
+              "title": "validtitle",
+              "description": "%s",
+              "price": 250,
+              "longitude": -0.118092,
+              "latitude": 51.509865,
+              "category": "%s",
+              "customerId": "%s",
+              "status": "ACTIVE",
+              "images": []
+            }
+            """;
 
     @BeforeEach
     public void setup() {
@@ -35,31 +49,42 @@ public class ListingResourcesIT {
                 {
                   "name": "John Does",
                   "email": "john.doe@example.com",
-                  "phone": "1234567890"
+                  "password": "1234567890"
                 }
                 """;
 
         customerId = RestAssured.given()
+                .log().all()
+
                                 .contentType("application/json")
                                 .body(customerProfile)
                                 .when().post("/v1/api/profile/create-profile")
                                 .then()
+                .log().all()
                                 .statusCode(200).extract()
                                 .path("data.id");
-        createListing();
+        System.out.println("------------------------------------------------");
+        System.out.println("customer ID: " + customerId);
     }
+
     private void createListing() {
         String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
         listingId = RestAssured.given()
-                .contentType("application/json")
-                .body(validListing)
-                .when().post("/v1/api/listings/create-listing")
-                .then()
-                .statusCode(200)
-                .body("data.customerId", is(customerId))
-                .extract()
-                .path("data.id");
-    }
+                               .log().all()
+                               .contentType("application/json")
+                               .body(validListing)
+                               .when().post("/v1/api/listings/create-listing")
+                               .then()
+                               .log().all()
+                               .statusCode(200)
+                               .body("data.customerId", is(customerId))
+                               .extract()
+                               .path("data.id");
+        System.out.println("------------------------------------------------");
+        System.out.println("Listing ID: " + listingId);
+        }
+
+
     @AfterEach
     public void tearDown() {
         System.out.println("Deleting customer profile with ID: " + customerId);
@@ -121,6 +146,7 @@ public class ListingResourcesIT {
     }
     @Test
     public void getListing_whenListingDoesNotExist_returnsError() {
+        createListing();
         RestAssured.given()
                 .when().post("/v1/api/listings/get-listing/non-existent-id")
                 .then()
@@ -130,6 +156,7 @@ public class ListingResourcesIT {
     }
     @Test
     public void getListing_whenListingExists_returnsListingDetails() {
+        createListing();
         RestAssured.given()
                 .when().post("/v1/api/listings/get-listing/" + listingId)
                 .then()
@@ -137,5 +164,62 @@ public class ListingResourcesIT {
                 .body("data.id", is(listingId))
                 .body("data.customerId", is(customerId));
     }
+    @Test
+    public void updateListing_whenListingNotExists_ReturnsError(){
+        createListing();
+        String validListing = String.format(VALID_UPDATE_LISTING_TEMPLATE, "non existing listingID","newTitle",Category.OTHER, customerId);
+        RestAssured.given()
+                   .contentType("application/json")
+                   .body(validListing)
+                   .when().post("/v1/api/listings/update-listing")
+                   .then()
+                   .statusCode(200)
+                   .log().all()
+                   .body("code", is(4001))
+                   .body("message", containsString("Cannot update listing with id non existing listingID as listing was not found with given ID."));
+    }
+    @Test
+    public void updateListing_whenListingExists_ReturnsListingDetails(){
+        createListing();
+        String validListing = String.format(VALID_UPDATE_LISTING_TEMPLATE,listingId,"NewDescription",Category.OTHER, customerId);
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validListing)
+                .when().post("/v1/api/listings/update-listing")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("data.id", is(listingId))
+                .body("data.customerId", is(customerId))
+                .body("data.description",containsString("NewDescription"));
 
+    }
+    @Test
+    public void deleteListing_whenListingNotExists_ReturnErrorMessage(){
+        createListing();
+        RestAssured.given()
+                .when().post("/v1/api/listings/delete-listing/non-existent-id")
+                .then()
+                .statusCode(200)
+                .body("code", is(4001))
+                .body("message", containsString("Cannot delete listing with id non-existent-id as listing was not found with given ID."));
+
+    }
+    @Test
+    public void deleteListing_whenListingExists_ReturnListingDetails(){
+        createListing();
+        String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+        RestAssured.given()
+                .when().post("/v1/api/listings/delete-listing/"+listingId)
+                .then()
+                .statusCode(200)
+                .body("data.id", is(listingId))
+                .body("data.customerId", is(customerId));
+        RestAssured.given()
+                .when().post("/v1/api/listings/get-listing/"+listingId)
+                .then()
+                .statusCode(200)
+                .body("code", is(4001))
+                .body("message", containsString("Cannot find listing with id " + listingId));
+    }
 }
