@@ -13,6 +13,8 @@ import infrastructure.dto.out.listing.ListingDetailsDto;
 import infrastructure.dto.out.listing.ListingPageDetailsDto;
 import infrastructure.dto.out.listing.PostedListingPageDto;
 import infrastructure.dto.out.listing.StarredListingPageDto;
+import infrastructure.result.CustomerStarListingResult;
+import infrastructure.result.ListingStarListingResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -39,20 +41,21 @@ public class CustomerListingResources {
     public Response starListingForCustomer(StarListingDto starListingDto) {
         ApiResponse<ListingWithCustomerInfoDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
 
-        Optional<ListingDetails> listingDetails = listingService.starListing(starListingDto.toDomain());
-        Optional<CustomerProfile> customerProfile = customerProfileService.starListing(starListingDto.toDomain());
-        if (customerProfile.isEmpty()) {
+        ListingStarListingResult listingStarListingResult = listingService.starListing(starListingDto.toDomain());
+		CustomerStarListingResult customerStarListingResult = customerProfileService.starListing(starListingDto.toDomain());
+        if (customerStarListingResult.isCustomerNotFound() || listingStarListingResult.isCustomerNotFound()) {
             response.setMessage(Optional.of("Cannot find customer with id " + starListingDto.customerId() + "."));
             response.setCode(4001);
             return Response.ok(response).build();
         }
-        if (listingDetails.isEmpty()) {
-            response.setMessage(Optional.of("Cannot find listing with id " + starListingDto.listingId() + "."));
-            response.setCode(4001);
-            return Response.ok(response).build();
-        }
+		if (customerStarListingResult.isListingNotFound() || listingStarListingResult.isListingNotFound()) {
+			response.setMessage(Optional.of("Cannot find listing with id " + starListingDto.listingId() + "."));
+			response.setCode(4001);
+			return Response.ok(response).build();
+		}
 
-        response.setData(Optional.of(ListingWithCustomerInfoDto.fromDomain(listingDetails.get(), customerProfile.get())));
+        response.setData(Optional.of(ListingWithCustomerInfoDto.fromDomain(listingStarListingResult.getListingDetails().get(),
+																		   customerStarListingResult.getCustomerProfile().get())));
         return Response.ok(response).build();
     }
 
