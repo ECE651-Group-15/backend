@@ -3,7 +3,8 @@ package domain.profile;
 import domain.listing.ListingDetails;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
-import infrastructure.result.CustomerStarListingResult;
+
+import infrastructure.result.CustomerStarResult;
 import infrastructure.result.DeleteCustomerResult;
 import infrastructure.result.UpdateCustomerProfileResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
@@ -403,7 +404,7 @@ public class CustomerProfileServiceTest {
                 .build();
         when(customerProfileRepository.getCustomerProfile(starListing.getCustomerId())).thenReturn(Optional.empty());
 
-        CustomerStarListingResult result = customerProfileService.starListing(starListing);
+        CustomerStarResult result = customerProfileService.starListing(starListing);
 
         assertTrue(result.isCustomerNotFound());
         assertFalse(result.isListingNotFound());
@@ -418,7 +419,7 @@ public class CustomerProfileServiceTest {
         when(customerProfileRepository.getCustomerProfile(starListing.getCustomerId())).thenReturn(Optional.of(new CustomerProfileEntity()));
         when(listingRepository.getListing(starListing.getListingId())).thenReturn(Optional.empty());
 
-        CustomerStarListingResult result = customerProfileService.starListing(starListing);
+        CustomerStarResult result = customerProfileService.starListing(starListing);
 
         assertFalse(result.isCustomerNotFound());
         assertTrue(result.isListingNotFound());
@@ -451,7 +452,7 @@ public class CustomerProfileServiceTest {
         when(listingRepository.getListing(starListing.getListingId())).thenReturn(Optional.of(listingEntity_1));
 
 
-        CustomerStarListingResult result = customerProfileService.starListing(starListing);
+        CustomerStarResult result = customerProfileService.starListing(starListing);
 
         assertFalse(result.isCustomerNotFound());
         assertFalse(result.isListingNotFound());
