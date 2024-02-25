@@ -401,6 +401,7 @@ public class CustomerListingResourcesIT {
 
     @Test
     public void GetListingByPage_NoListingsExist_ReturnErrorMessage(){
+        
         String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE,0);
         RestAssured.given()
                 .contentType("application/json")

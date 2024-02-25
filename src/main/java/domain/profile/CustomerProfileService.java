@@ -49,7 +49,7 @@ public class CustomerProfileService {
 		return Optional.of(customerProfile);
 	}
 
-	private void validateProfile(CreateCustomerProfile createCustomerProfile) {
+	public void validateProfile(CreateCustomerProfile createCustomerProfile) {
 		if (createCustomerProfile.getEmail() == null
 				|| createCustomerProfile.getEmail().trim().isEmpty()
 				|| createCustomerProfile.getName() == null
