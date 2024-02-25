@@ -13,8 +13,10 @@ import infrastructure.dto.out.listing.ListingDetailsDto;
 import infrastructure.dto.out.listing.ListingPageDetailsDto;
 import infrastructure.dto.out.listing.PostedListingPageDto;
 import infrastructure.dto.out.listing.StarredListingPageDto;
-import infrastructure.result.CustomerStarListingResult;
-import infrastructure.result.ListingStarListingResult;
+import infrastructure.result.CustomerStarResult;
+import infrastructure.result.CustomerUnStarResult;
+import infrastructure.result.ListingStarResult;
+import infrastructure.result.ListingUnStarResult;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -41,23 +43,46 @@ public class CustomerListingResources {
     public Response starListingForCustomer(StarListingDto starListingDto) {
         ApiResponse<ListingWithCustomerInfoDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
 
-        ListingStarListingResult listingStarListingResult = listingService.starListing(starListingDto.toDomain());
-		CustomerStarListingResult customerStarListingResult = customerProfileService.starListing(starListingDto.toDomain());
-        if (customerStarListingResult.isCustomerNotFound() || listingStarListingResult.isCustomerNotFound()) {
+        ListingStarResult listingStarResult = listingService.starListing(starListingDto.toDomain());
+		CustomerStarResult customerStarResult = customerProfileService.starListing(starListingDto.toDomain());
+        if (customerStarResult.isCustomerNotFound() || listingStarResult.isCustomerNotFound()) {
             response.setMessage(Optional.of("Cannot find customer with id " + starListingDto.customerId() + "."));
             response.setCode(4001);
             return Response.ok(response).build();
         }
-		if (customerStarListingResult.isListingNotFound() || listingStarListingResult.isListingNotFound()) {
+		if (customerStarResult.isListingNotFound() || listingStarResult.isListingNotFound()) {
 			response.setMessage(Optional.of("Cannot find listing with id " + starListingDto.listingId() + "."));
 			response.setCode(4001);
 			return Response.ok(response).build();
 		}
 
-        response.setData(Optional.of(ListingWithCustomerInfoDto.fromDomain(listingStarListingResult.getListingDetails().get(),
-																		   customerStarListingResult.getCustomerProfile().get())));
+        response.setData(Optional.of(ListingWithCustomerInfoDto.fromDomain(listingStarResult.getListingDetails().get(),
+																		   customerStarResult.getCustomerProfile().get())));
         return Response.ok(response).build();
     }
+
+	@POST
+	@Path("/unstar-listing")
+	public Response unStarListingForCustomer(StarListingDto starListingDto) {
+		ApiResponse<ListingWithCustomerInfoDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
+
+		ListingUnStarResult listingUnStarResult = listingService.unStarListing(starListingDto.toDomain());
+		CustomerUnStarResult customerUnStarResult = customerProfileService.unStarListing(starListingDto.toDomain());
+		if (listingUnStarResult.isCustomerNotFound() || customerUnStarResult.isCustomerNotFound()) {
+			response.setMessage(Optional.of("Cannot find customer with id " + starListingDto.customerId() + "."));
+			response.setCode(4001);
+			return Response.ok(response).build();
+		}
+		if (listingUnStarResult.isListingNotFound() || customerUnStarResult.isListingNotFound()) {
+			response.setMessage(Optional.of("Cannot find listing with id " + starListingDto.listingId() + "."));
+			response.setCode(4001);
+			return Response.ok(response).build();
+		}
+
+		response.setData(Optional.of(ListingWithCustomerInfoDto.fromDomain(listingUnStarResult.getListingDetails().get(),
+																		   customerUnStarResult.getCustomerProfile().get())));
+		return Response.ok(response).build();
+	}
 
     @POST
     @Path("/get-customer-posted-listings")
