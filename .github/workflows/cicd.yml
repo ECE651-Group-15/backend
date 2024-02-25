@@ -22,8 +22,19 @@ jobs:
 
       - name: Deploy to EC2
         run: |
+          echo "${{ secrets.SSHKEY_GITHUB }}" > ./github_ssh_key
+          scp -i ~/.ssh/id_rsa ./github_ssh_key ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/.ssh/github_ssh_key
+          rm -f ./github_ssh_key
+          
           ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "
-          export DB_USERNAME='${{ secrets.DB_USERNAME }}';
-          export DB_PASSWORD='${{ secrets.DB_PASSWORD }}';
-          export DB_NAME='${{ secrets.DB_NAME }}';
-          bash -l -s" < deploy_script.sh
+            chmod 600 /home/ubuntu/.ssh/github_ssh_key
+            eval \$(ssh-agent -s)
+            ssh-add /home/ubuntu/.ssh/github_ssh_key
+            ssh-keyscan github.com >> /home/ubuntu/.ssh/known_hosts
+          
+            git config --global url.'git@github.com:'.insteadOf 'https://github.com/'
+
+            export DB_USERNAME='${{ secrets.DB_USERNAME }}';
+            export DB_PASSWORD='${{ secrets.DB_PASSWORD }}';
+            export DB_NAME='${{ secrets.DB_NAME }}';
+            bash -l -s" < deploy_script.sh

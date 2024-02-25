@@ -11,6 +11,9 @@ sleep 5
 # shellcheck disable=SC2164
 cd /home/ubuntu/backend
 
+git fetch
+git pull origin main
+
 ./mvnw package
 
 nohup java -jar target/quarkus-app/quarkus-run.jar > app.log 2>&1 &
