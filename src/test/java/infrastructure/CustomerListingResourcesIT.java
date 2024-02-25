@@ -47,6 +47,15 @@ public class CustomerListingResourcesIT {
                 "customerId": "%s"
             }
             """;
+    private final String VALID_STARRED_LISTINGS_TEMPLATE= """
+            {
+                "customerId": "%s",
+                "page": "%d",
+                "pageSize": "%d"
+                
+            }
+            """;
+
     private void deleteCustomerProfile(String customerId) {
         RestAssured.given()
                 .contentType("application/json")
@@ -259,6 +268,114 @@ public class CustomerListingResourcesIT {
                 .then()
                 .statusCode(200);
         deleteCustomerProfile(customerId);
+    }
+
+    @Test
+    public void getStarredListings_WhenPageIsNegative_ReturnErrorMessage(){
+        String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, "123456");
+
+        String customerId = RestAssured.given()
+                .contentType("application/json")
+                .body(validProfile)
+                .when()
+                .post("/v1/api/profile/create-profile")
+                .then()
+                .statusCode(200)
+                .body("data.name", is("Nikola Tesla1"))
+                .extract().path("data.id");
+        System.out.println("customerId :" + customerId);
+
+        String validGetStarredListing = String.format(VALID_STARRED_LISTINGS_TEMPLATE,customerId,-1,1);
+        RestAssured.given()
+                .log().all()
+                .contentType("application/json")
+                .body(validGetStarredListing)
+                .when()
+                .post("/v1/api/listing-profile/starred-listings")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("code",is(4001))
+                .body("message",containsString("Page number cannot be negative."));
+
+
+        deleteCustomerProfile(customerId);
+
+    }
+    @Test
+    public void getStarredListings_WhenCustomerNotExists_ReturnErrorMessage(){
+        String validGetStarredListing = String.format(VALID_STARRED_LISTINGS_TEMPLATE,"Non-existing-customerID",0,1);
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validGetStarredListing)
+                .when()
+                .post("/v1/api/listing-profile/starred-listings")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("code",is(4001))
+                .body("message",containsString("Cannot find customer with id "));
+    }
+
+    @Test
+    public void getStarredListings_WhenCustomerExists_ReturnListingDetails(){
+        String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, "123456");
+
+        String customerId = RestAssured.given()
+                .contentType("application/json")
+                .body(validProfile)
+                .when()
+                .post("/v1/api/profile/create-profile")
+                .then()
+                .statusCode(200)
+                .body("data.name", is("Nikola Tesla1"))
+                .extract().path("data.id");
+        System.out.println("customerId :" + customerId);
+
+        String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+
+        listingId = RestAssured.given()
+                .contentType("application/json")
+                .body(validListing)
+                .when().post("/v1/api/listings/create-listing")
+                .then()
+                .statusCode(200)
+                .body("data.customerId", is(customerId))
+                .extract()
+                .path("data.id");
+        System.out.println("listingId :" + listingId);
+
+        String validStarListing = String.format(VALID_STARLISTING_TEMPLATE,customerId,listingId);
+
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validStarListing)
+                .log().all()
+                .when()
+                .post("/v1/api/listing-profile/star-listing")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("data.listingDetails.id",is(listingId))
+                .body("data.customerProfilesDetails.id",is(customerId));
+
+        String validGetStarredListing = String.format(VALID_STARRED_LISTINGS_TEMPLATE,customerId,0,1);
+        RestAssured.given()
+                .contentType("application/json")
+                .body(validGetStarredListing)
+                .when()
+                .post("/v1/api/listing-profile/starred-listings")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("data.starredListings[0].id",is(listingId))
+                .body("data.starredListings[0].customerId",is(customerId));
+        RestAssured.given()
+                .when().post("v1/api/listings/delete-listing/" + listingId)
+                .then()
+                .statusCode(200);
+        deleteCustomerProfile(customerId);
+
     }
 
 
