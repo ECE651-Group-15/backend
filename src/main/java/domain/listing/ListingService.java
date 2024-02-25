@@ -1,6 +1,7 @@
 package domain.listing;
 
 import domain.profile.CustomerProfileRepository;
+import infrastructure.result.ListingStarListingResult;
 import infrastructure.result.UpdateListingResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
@@ -128,14 +129,24 @@ public class ListingService {
 
 
     @Transactional
-    public Optional<ListingDetails> starListing(StarListing starListing) {
+    public ListingStarListingResult starListing(StarListing starListing) {
+		ListingStarListingResult listingStarListingResult = ListingStarListingResult.builder()
+																					.listingNotFound(false)
+																					.customerNotFound(false)
+																					.listingDetails(Optional.empty())
+																					.build();
         Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
         Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
                 starListing.getCustomerId());
 
-        if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
-            return Optional.empty();
-        }
+        if (customerProfileEntityOptional.isEmpty()) {
+			listingStarListingResult.setCustomerNotFound(true);
+			return listingStarListingResult;
+		}
+		else if (listingEntityOptional.isEmpty()) {
+			listingStarListingResult.setListingNotFound(true);
+			return listingStarListingResult;
+		}
         ListingEntity listingEntity = listingEntityOptional.get();
         CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
 
@@ -145,8 +156,11 @@ public class ListingService {
             listingEntity.setCustomersWhoStarred(customersWhoStarred);
         }
 
-        return listingRepository.getListing(starListing.getListingId())
-                                .map(ListingEntity::toDomain);
+        Optional<ListingDetails> listingDetails = listingRepository.getListing(starListing.getListingId())
+																   .map(ListingEntity::toDomain);
+		return listingStarListingResult.toBuilder()
+									   .listingDetails(listingDetails)
+									   .build();
     }
 
 	@Transactional

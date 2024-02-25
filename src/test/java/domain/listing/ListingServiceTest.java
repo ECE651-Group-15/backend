@@ -2,6 +2,7 @@ package domain.listing;
 
 import domain.profile.CustomerProfile;
 import domain.profile.CustomerProfileRepository;
+import infrastructure.result.ListingStarListingResult;
 import infrastructure.result.UpdateListingResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
@@ -436,9 +437,9 @@ public class ListingServiceTest {
         CustomerProfileEntity  customerProfileEntity = Mockito.mock(CustomerProfileEntity.class);
         when(listingRepository.getListing(starListing.getListingId())).thenReturn(Optional.empty());
         when(customerProfileRepository.getCustomerProfile(starListing.getCustomerId())).thenReturn(Optional.empty());
-        Optional<ListingDetails> result = listingService.starListing(starListing);
-        if (result.isPresent()){
-            assertEquals(Optional.empty(),result.get());
+        ListingStarListingResult result = listingService.starListing(starListing);
+        if (result.getListingDetails().isPresent()){
+            assertEquals(Optional.empty(),result.getListingDetails());
         }
 
 
@@ -462,9 +463,9 @@ public class ListingServiceTest {
         when(listingEntity.toDomain()).thenReturn(listingDetails);
 
 
-        Optional<ListingDetails> result = listingService.starListing(starListing);
-        if (result.isPresent()){
-            assertEquals(listingDetails,result.get());
+		ListingStarListingResult result = listingService.starListing(starListing);
+        if (result.getListingDetails().isPresent()){
+            assertEquals(listingDetails,result.getListingDetails().get());
         }
     }
 
