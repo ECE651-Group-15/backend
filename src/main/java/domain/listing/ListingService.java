@@ -1,7 +1,8 @@
 package domain.listing;
 
 import domain.profile.CustomerProfileRepository;
-import infrastructure.result.ListingStarListingResult;
+import infrastructure.result.ListingStarResult;
+import infrastructure.result.ListingUnStarResult;
 import infrastructure.result.UpdateListingResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
@@ -129,23 +130,23 @@ public class ListingService {
 
 
     @Transactional
-    public ListingStarListingResult starListing(StarListing starListing) {
-		ListingStarListingResult listingStarListingResult = ListingStarListingResult.builder()
-																					.listingNotFound(false)
-																					.customerNotFound(false)
-																					.listingDetails(Optional.empty())
-																					.build();
+    public ListingStarResult starListing(StarListing starListing) {
+		ListingStarResult listingStarResult = ListingStarResult.builder()
+															   .listingNotFound(false)
+															   .customerNotFound(false)
+															   .listingDetails(Optional.empty())
+															   .build();
         Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
         Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
                 starListing.getCustomerId());
 
         if (customerProfileEntityOptional.isEmpty()) {
-			listingStarListingResult.setCustomerNotFound(true);
-			return listingStarListingResult;
+			listingStarResult.setCustomerNotFound(true);
+			return listingStarResult;
 		}
 		else if (listingEntityOptional.isEmpty()) {
-			listingStarListingResult.setListingNotFound(true);
-			return listingStarListingResult;
+			listingStarResult.setListingNotFound(true);
+			return listingStarResult;
 		}
         ListingEntity listingEntity = listingEntityOptional.get();
         CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
@@ -158,10 +159,45 @@ public class ListingService {
 
         Optional<ListingDetails> listingDetails = listingRepository.getListing(starListing.getListingId())
 																   .map(ListingEntity::toDomain);
-		return listingStarListingResult.toBuilder()
-									   .listingDetails(listingDetails)
-									   .build();
+		return listingStarResult.toBuilder()
+								.listingDetails(listingDetails)
+								.build();
     }
+
+	@Transactional
+	public ListingUnStarResult unStarListing(StarListing starListing) {
+		ListingUnStarResult listingUnStarResult = ListingUnStarResult.builder()
+																	 .listingNotFound(false)
+																	 .customerNotFound(false)
+																	 .listingDetails(Optional.empty())
+																	 .build();
+		Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
+		Optional<CustomerProfileEntity> customerProfileEntityOptional =
+				customerProfileRepository.getCustomerProfile(starListing.getCustomerId());
+
+		if (customerProfileEntityOptional.isEmpty()) {
+			listingUnStarResult.setCustomerNotFound(true);
+			return listingUnStarResult;
+		}
+		else if (listingEntityOptional.isEmpty()) {
+			listingUnStarResult.setListingNotFound(true);
+			return listingUnStarResult;
+		}
+		ListingEntity listingEntity = listingEntityOptional.get();
+		CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
+
+		List<CustomerProfileEntity> customersWhoStarred = listingEntity.getCustomersWhoStarred();
+		if (customersWhoStarred.contains(customerProfileEntity)) {
+			customersWhoStarred.remove(customerProfileEntity);
+			listingEntity.setCustomersWhoStarred(customersWhoStarred);
+		}
+
+		Optional<ListingDetails> listingDetails = listingRepository.getListing(starListing.getListingId())
+																   .map(ListingEntity::toDomain);
+		return listingUnStarResult.toBuilder()
+								  .listingDetails(listingDetails)
+								  .build();
+	}
 
     public List<ListingDetails> getListingPage(int page, Optional<Integer> pageSize, Optional<List<String>> listingIds) {
         if (listingIds.isEmpty()) {

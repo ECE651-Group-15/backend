@@ -33,7 +33,6 @@ public class PanacheListingRepository implements ListingRepository, PanacheRepos
 
     @Override
     public List<ListingEntity> getListingPage(int pageNumber, int pageSize) {
-
         PanacheQuery<ListingEntity> query = find("", Sort.by("updatedAt").descending());
 
         query.page(Page.of(pageNumber, pageSize));
