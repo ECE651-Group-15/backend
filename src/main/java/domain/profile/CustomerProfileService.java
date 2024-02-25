@@ -3,7 +3,8 @@ package domain.profile;
 import domain.MD5Util;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
-import infrastructure.result.CustomerStarListingResult;
+import infrastructure.result.CustomerStarResult;
+import infrastructure.result.CustomerUnStarResult;
 import infrastructure.result.DeleteCustomerResult;
 import infrastructure.result.UpdateCustomerProfileResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
@@ -117,24 +118,24 @@ public class CustomerProfileService {
 
 
 	@Transactional
-	public CustomerStarListingResult starListing(StarListing starListing) {
-		CustomerStarListingResult customerStarListingResult =
-				CustomerStarListingResult.builder()
-										 .customerNotFound(false)
-										 .listingNotFound(false)
-										 .customerProfile(Optional.empty())
-										 .build();
+	public CustomerStarResult starListing(StarListing starListing) {
+		CustomerStarResult customerStarResult =
+				CustomerStarResult.builder()
+								  .customerNotFound(false)
+								  .listingNotFound(false)
+								  .customerProfile(Optional.empty())
+								  .build();
 		Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
 		Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
 				starListing.getCustomerId());
 
 		if (customerProfileEntityOptional.isEmpty()) {
-			customerStarListingResult.setCustomerNotFound(true);
-			return customerStarListingResult;
+			customerStarResult.setCustomerNotFound(true);
+			return customerStarResult;
 		}
 		if (listingEntityOptional.isEmpty()) {
-			customerStarListingResult.setListingNotFound(true);
-			return customerStarListingResult;
+			customerStarResult.setListingNotFound(true);
+			return customerStarResult;
 		}
 		ListingEntity listingEntity = listingEntityOptional.get();
 		CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
@@ -147,18 +148,28 @@ public class CustomerProfileService {
 		Optional<CustomerProfile> fetchedCustomer =
 				customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
 										 .map(CustomerProfileEntity::toDomain);
-		customerStarListingResult.setCustomerProfile(fetchedCustomer);
-		return customerStarListingResult;
+		customerStarResult.setCustomerProfile(fetchedCustomer);
+		return customerStarResult;
 	}
 
 	@Transactional
-	public Optional<CustomerProfile> unStarListing(StarListing starListing) {
+	public CustomerUnStarResult unStarListing(StarListing starListing) {
+		CustomerUnStarResult customerUnStarResult = CustomerUnStarResult.builder()
+																		.customerNotFound(false)
+																		.listingNotFound(false)
+																		.customerProfile(Optional.empty())
+																		.build();
 		Optional<ListingEntity> listingEntityOptional = listingRepository.getListing(starListing.getListingId());
 		Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(
 				starListing.getCustomerId());
 
-		if (listingEntityOptional.isEmpty() || customerProfileEntityOptional.isEmpty()) {
-			return Optional.empty();
+		if (customerProfileEntityOptional.isEmpty()) {
+			customerUnStarResult.setCustomerNotFound(true);
+			return customerUnStarResult;
+		}
+		if (listingEntityOptional.isEmpty()) {
+			customerUnStarResult.setListingNotFound(true);
+			return customerUnStarResult;
 		}
 		ListingEntity listingEntity = listingEntityOptional.get();
 		CustomerProfileEntity customerProfileEntity = customerProfileEntityOptional.get();
@@ -168,8 +179,10 @@ public class CustomerProfileService {
 			starredListings.remove(listingEntity);
 			customerProfileEntity.setStarredListings(starredListings);
 		}
-		return customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
-										.map(CustomerProfileEntity::toDomain);
+		Optional<CustomerProfile> customerProfile = customerProfileRepository.getCustomerProfile(starListing.getCustomerId())
+																			 .map(CustomerProfileEntity::toDomain);
+		customerUnStarResult.setCustomerProfile(customerProfile);
+		return customerUnStarResult;
 	}
 
     public Optional<CustomerProfileEntity> requireUser(String id, String password) {

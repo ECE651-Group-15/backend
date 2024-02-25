@@ -7,8 +7,8 @@ import lombok.Data;
 import java.util.Optional;
 
 @Data
-@Builder
-public class CustomerStarListingResult {
+@Builder(toBuilder = true)
+public class CustomerUnStarResult {
 	boolean listingNotFound;
 	boolean customerNotFound;
 	Optional<CustomerProfile> customerProfile;
