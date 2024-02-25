@@ -5,6 +5,7 @@ import domain.listing.ListingRepository;
 import domain.listing.StarListing;
 
 import infrastructure.result.CustomerStarResult;
+import infrastructure.result.CustomerUnStarResult;
 import infrastructure.result.DeleteCustomerResult;
 import infrastructure.result.UpdateCustomerProfileResult;
 import infrastructure.sql.entity.CustomerProfileEntity;
@@ -179,7 +180,6 @@ public class CustomerProfileServiceTest {
     }
     @Test
     public void getCustomerProfile_WhenProfileExists_ReturnCustomerProfile(){
-        String ProfileId = "profileId";
         CustomerProfileEntity mockedCustomerProfileEntity = Mockito.mock(CustomerProfileEntity.class);
         CustomerProfile customerProfile = CustomerProfile.builder()
                 .id("profileId")
@@ -194,8 +194,8 @@ public class CustomerProfileServiceTest {
                 .starredListingIds(Optional.of(new ArrayList<>()))
                 .build();
 
-        when(customerProfileRepository.getCustomerProfile(ProfileId)).thenReturn(Optional.of(mockedCustomerProfileEntity));
-        Optional<CustomerProfile>result = customerProfileService.getCustomerProfile((ProfileId));
+        when(customerProfileRepository.getCustomerProfile("profileId")).thenReturn(Optional.of(mockedCustomerProfileEntity));
+        Optional<CustomerProfile>result = customerProfileService.getCustomerProfile(("profileId"));
         if (result.isPresent()){
             assertEquals(customerProfile, result.get());
         }
@@ -323,8 +323,6 @@ public class CustomerProfileServiceTest {
 
     @Test
     public void deleteCustomerProfile_WhenCustomerExistsWithNoListings_ReturnDeleteCustomerResult(){
-        String ProfileId = "profileId";
-        //CustomerProfileEntity mockedCustomerProfileEntity = Mockito.mock(CustomerProfileEntity.class);
         CustomerProfile customerProfile = CustomerProfile.builder()
                 .id("profileId")
                 .email("tester@gmail.com")
@@ -338,7 +336,7 @@ public class CustomerProfileServiceTest {
                 .starredListingIds(Optional.of(List.of()))
                 .build();
         CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.builder()
-                .id(ProfileId)
+                .id("profileId")
                 .email("tester@gmail.com")
                 .password("1234")
                 .name("tester")
@@ -350,8 +348,8 @@ public class CustomerProfileServiceTest {
                 .starredListings(List.of())
                 .build();
 
-        when(customerProfileRepository.getCustomerProfile(ProfileId)).thenReturn(Optional.of(customerProfileEntity));
-        DeleteCustomerResult result = customerProfileService.deleteCustomerProfile(ProfileId);
+        when(customerProfileRepository.getCustomerProfile("profileId")).thenReturn(Optional.of(customerProfileEntity));
+        DeleteCustomerResult result = customerProfileService.deleteCustomerProfile("profileId");
         assertFalse(result.hasCreatedListings());
         assertEquals(customerProfile,result.deletedCustomerProfile().get());
 
@@ -388,8 +386,7 @@ public class CustomerProfileServiceTest {
                 .build();
 
         when(customerProfileRepository.getCustomerProfile(profileId)).thenReturn(Optional.of(customerProfileEntity));
-        when(customerProfileRepository.deleteCustomerProfile(any(CustomerProfileEntity.class)))
-                .thenReturn(Optional.of(customerProfileEntity));
+        when(customerProfileRepository.deleteCustomerProfile(any(CustomerProfileEntity.class))).thenReturn(Optional.of(customerProfileEntity));
         DeleteCustomerResult result = customerProfileService.deleteCustomerProfile(profileId);
         assertTrue(result.hasCreatedListings());
         assertEquals(customerProfile.getId(), result.deletedCustomerProfile().get().getId());
@@ -461,9 +458,149 @@ public class CustomerProfileServiceTest {
         });
 
     }
+    @Test
+    public void UnStarListing_WhenCustomerNotFound_SetCustomerNotFoundToTrue(){
+        StarListing starListing = StarListing.builder()
+                .customerId("customerId")
+                .listingId("listingId")
+                .build();
+        when(customerProfileRepository.getCustomerProfile(starListing.getCustomerId())).thenReturn(Optional.empty());
+
+        CustomerUnStarResult result = customerProfileService.unStarListing(starListing);
+
+        assertTrue(result.isCustomerNotFound());
+        assertFalse(result.isListingNotFound());
+        assertFalse(result.getCustomerProfile().isPresent());
+    }
+
+    @Test
+    public void UnStarListing_WhenListingNotFound_SetListingNotFoundToTrue(){
+        StarListing starListing = StarListing.builder()
+                .customerId("customerId")
+                .listingId("listingId")
+                .build();
+        when(customerProfileRepository.getCustomerProfile(starListing.getCustomerId())).thenReturn(Optional.of(new CustomerProfileEntity()));
+        when(listingRepository.getListing(starListing.getListingId())).thenReturn(Optional.empty());
+
+        CustomerUnStarResult result = customerProfileService.unStarListing(starListing);
+
+        assertFalse(result.isCustomerNotFound());
+        assertTrue(result.isListingNotFound());
+        assertFalse(result.getCustomerProfile().isPresent());
+    }
+    @Test
+    public void UnStarListing_WhenListingAndCustomerExist_ReturnCustomerStarListingResult(){
+        StarListing starListing = StarListing.builder()
+                .customerId("customerId")
+                .listingId("listingId")
+                .build();
+
+        ListingEntity listingEntity_1 = Mockito.mock(ListingEntity.class);
+        when(listingEntity_1.getId()).thenReturn("listingId");
+        List<ListingEntity> initialStarredListings = new ArrayList<>();
+        initialStarredListings.add(listingEntity_1);
+        CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.builder()
+                .id("profileId")
+                .email("tester@gmail.com")
+                .password("1234")
+                .name("tester")
+                .avatar("123")
+                .phone("123456")
+                .longitude(0.0)
+                .latitude(0.0)
+                .postedListings(List.of())
+                .starredListings(initialStarredListings)
+                .build();
+
+
+
+        when(customerProfileRepository.getCustomerProfile(starListing.getCustomerId())).thenReturn(Optional.of(customerProfileEntity));
+        when(listingRepository.getListing(starListing.getListingId())).thenReturn(Optional.of(listingEntity_1));
+
+
+        CustomerUnStarResult result = customerProfileService.unStarListing(starListing);
+
+        assertFalse(result.isCustomerNotFound());
+        assertFalse(result.isListingNotFound());
+        CustomerProfile updatedCustomerProfile = result.getCustomerProfile().get();
+        assertFalse(updatedCustomerProfile.getStarredListingIds().orElse(List.of()).contains("listingId"));
+
+
+    }
+
+    @Test
+    public void requireUser_UserNotFound_ReturnEmptyCustomerProfileEntity(){
+        when(customerProfileRepository.getCustomerProfile("nonExistentId")).thenReturn(Optional.empty());
+
+        Optional<CustomerProfileEntity> result = customerProfileService.requireUser("nonExistentId", "testPassword");
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    public void requireUser_UserFoundButWithWrongPassword_ReturnEmptyCustomerProfileEntity(){
+        CustomerProfileEntity customerProfileEntity = new CustomerProfileEntity();
+        customerProfileEntity.setPassword("CorrectPassword");
+        when(customerProfileRepository.getCustomerProfile("ExistentId")).thenReturn(Optional.of(customerProfileEntity));
+        Optional<CustomerProfileEntity> result = customerProfileService.requireUser("ExistentId", "WrongPassword");
+        assertFalse(result.isPresent());
+
+    }
+    @Test
+    public void requireUser_UserFoundWithCorrectPassword_ReturnCustomerProfileEntity(){
+        CustomerProfileEntity CustomerProfileEntity = new CustomerProfileEntity();
+        CustomerProfileEntity.setPassword("CorrectPassword");
+        when(customerProfileRepository.getCustomerProfile("ExistId")).thenReturn(Optional.of(CustomerProfileEntity));
+        Optional<CustomerProfileEntity> result = customerProfileService.requireUser("ExistId", "CorrectPassword");
+        assertTrue(result.isPresent());
+        assertEquals("CorrectPassword", result.get().getPassword());
+    }
+
+    @Test
+    public void getCustomerProfileByPage() {
+        int page = 0;
+        int pageSize = 2;
+        List<CustomerProfileEntity> EntityList = new ArrayList<>();
+        CustomerProfileEntity customerProfileEntity_1 = CustomerProfileEntity.builder()
+                .id("Customer_1")
+                .email("tester_1@gmail.com")
+                .password("1234")
+                .name("tester1")
+                .avatar("123")
+                .phone("123456")
+                .longitude(0.0)
+                .latitude(0.0)
+                .postedListings(List.of())
+                .starredListings(List.of())
+                .build();
+        CustomerProfileEntity customerProfileEntity_2 = CustomerProfileEntity.builder()
+                .id("Customer_2")
+                .email("tester_2@gmail.com")
+                .password("1234")
+                .name("tester2")
+                .avatar("123")
+                .phone("123456")
+                .longitude(0.0)
+                .latitude(0.0)
+                .postedListings(List.of())
+                .starredListings(List.of())
+                .build();
+        EntityList.add(customerProfileEntity_1);
+        EntityList.add(customerProfileEntity_2);
+        when(customerProfileRepository.getCustomerProfileByPage(page, pageSize)).thenReturn(EntityList);
+        List<CustomerProfile> result = customerProfileService.getCustomerProfileByPage(page, pageSize);
+
+        assertEquals(pageSize, result.size());
+        CustomerProfile Customer_1 = result.get(0);
+        CustomerProfile Customer_2 = result.get(1);
+        assertEquals("Customer_1",Customer_1.getId());
+        assertEquals("Customer_2",Customer_2.getId());
+        assertEquals("tester_1@gmail.com",Customer_1.getEmail());
+        assertEquals("tester_2@gmail.com",Customer_2.getEmail());
 
 
 
 
+    }
 
 }
