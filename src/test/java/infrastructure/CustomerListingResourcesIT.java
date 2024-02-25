@@ -461,6 +461,64 @@ public class CustomerListingResourcesIT {
 
 
     }
+    @Test
+    public void GetListingWithCustomerDetails_WhenListingIDNotExists_ReturnErrorMessage(){
+
+        RestAssured.given()
+                .when()
+                .post("/v1/api/listing-profile/listing/" + "Non-Existing-ListingID"+ "/customer/")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("message",containsString("Cannot find listing with id " + "Non-Existing-ListingID" + "."));
+    }
+
+    @Test
+    public void GetListingWithCustomerDetails_WhenListingExists_ReturnListingDetails(){
+        String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, "123456");
+
+        String customerId = RestAssured.given()
+                .contentType("application/json")
+                .body(validProfile)
+                .when()
+                .post("/v1/api/profile/create-profile")
+                .then()
+                .statusCode(200)
+                .body("data.name", is("Nikola Tesla1"))
+                .extract().path("data.id");
+        System.out.println("customerId :" + customerId);
+
+        String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+
+        listingId = RestAssured.given()
+                .contentType("application/json")
+                .body(validListing)
+                .when().post("/v1/api/listings/create-listing")
+                .then()
+                .statusCode(200)
+                .body("data.customerId", is(customerId))
+                .extract()
+                .path("data.id");
+        System.out.println("listingId :" + listingId);
+
+        RestAssured.given()
+                .when()
+                .post("/v1/api/listing-profile/listing/" + listingId + "/customer/")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body("data.listingDetails.id",is(listingId))
+                .body("data.customerProfilesDetails.id",is(customerId));
+
+        RestAssured.given()
+                .when().post("v1/api/listings/delete-listing/" + listingId)
+                .then()
+                .statusCode(200);
+        deleteCustomerProfile(customerId);
+
+    }
+
+
 
 
 }
