@@ -502,6 +502,7 @@ public class CustomerListingResourcesIT {
 				   .body("message", containsString("Page number and page size cannot be negative."));
 	}
 
+
     @Test
     public void GetListingByPage_ListingsExist_ReturnListingDetails(){
 		String email = UUID.randomUUID() + "@example.com";

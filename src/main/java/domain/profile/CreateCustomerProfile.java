@@ -14,4 +14,6 @@ public class CreateCustomerProfile {
     Optional<String> phone;
     Optional<Double> longitude;
     Optional<Double> latitude;
+
+
 }

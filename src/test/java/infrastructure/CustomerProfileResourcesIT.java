@@ -327,4 +327,14 @@ public class CustomerProfileResourcesIT {
 				   .statusCode(200)
 				   .body("code", is(4001));
 	}
+
+	@Test
+	public void getCustomerProfilesByPage_PageIsNegative_ReturnErrorMessage(){
+		RestAssured.given()
+				.contentType("application/json")
+				.when().post("/v1/api/profile/delete-profile/" + "customerId")
+				.then()
+				.statusCode(200)
+				.body("code", is(4001));
+	}
 }

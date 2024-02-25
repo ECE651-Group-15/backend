@@ -50,7 +50,7 @@ public class CustomerProfileService {
 		return Optional.of(customerProfile);
 	}
 
-	private void validateProfile(CreateCustomerProfile createCustomerProfile) {
+	public void validateProfile(CreateCustomerProfile createCustomerProfile) {
 		if (createCustomerProfile.getEmail() == null
 				|| createCustomerProfile.getEmail().trim().isEmpty()
 				|| createCustomerProfile.getName() == null
@@ -185,13 +185,13 @@ public class CustomerProfileService {
 		return customerUnStarResult;
 	}
 
-    public Optional<CustomerProfileEntity> requireUser(String id, String password) {
-        Optional<CustomerProfile> customerProfile =
-                customerProfileRepository.getCustomerProfile(id)
-                                         .map(CustomerProfileEntity::toDomain);
-        return customerProfile.filter(profile -> profile.getPassword().equals(password))
-                              .map(CustomerProfileEntity::fromDomain);
-    }
+	public Optional<CustomerProfileEntity> requireUser(String id, String password) {
+		Optional<CustomerProfile> customerProfile =
+				customerProfileRepository.getCustomerProfile(id)
+										 .map(CustomerProfileEntity::toDomain);
+		return customerProfile.filter(profile -> profile.getPassword().equals(password))
+							  .map(CustomerProfileEntity::fromDomain);
+	}
 
 	public List<CustomerProfile> getCustomerProfileByPage(int page,
 														  int pageSize) {
