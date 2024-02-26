@@ -5,6 +5,7 @@ import domain.profile.CustomerProfileService;
 import infrastructure.dto.ApiResponse;
 import infrastructure.dto.in.listing.PageDto;
 import infrastructure.dto.in.profile.CreateCustomerProfileDto;
+import infrastructure.dto.in.profile.LoginDto;
 import infrastructure.dto.in.profile.UpdateCustomerProfileDto;
 import infrastructure.dto.out.profile.CustomerProfilePageDto;
 import infrastructure.dto.out.profile.CustomerProfilesDetailsDto;
@@ -132,4 +133,21 @@ public class CustomerProfileResources {
         response.setData(Optional.ofNullable(customerProfilePageDto));
         return Response.ok(response).build();
     }
+
+	@POST
+	@Path("/login")
+	public Response customerLogin(LoginDto loginDto) {
+		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
+																			 200,
+																			 Optional.empty());
+
+		Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.customerLogin(loginDto.toDomain());
+		if (fetchedCustomerProfile.isEmpty()) {
+			response.setMessage(Optional.of("Cannot find customer with email " + loginDto.email().get() + " and provided password."));
+			response.setCode(4001);
+		} else {
+			response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(fetchedCustomerProfile.get())));
+		}
+		return Response.ok(response).build();
+	}
 }
