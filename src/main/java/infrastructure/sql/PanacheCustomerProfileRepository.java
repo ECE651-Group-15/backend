@@ -38,10 +38,6 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
     @Override
     @Transactional
     public Optional<CustomerProfileEntity> updateCustomerProfile(UpdateCustomerProfile updateCustomerProfile) {
-//        Optional<CustomerProfileEntity> customerProfileEntityOptional = getCustomerProfile(updateCustomerProfile.getId());
-//        if (customerProfileEntityOptional.isEmpty()) {
-//            return Optional.empty();
-//        }
         CustomerProfileEntity customerProfileEntity = getCustomerProfile(updateCustomerProfile.getId()).get();
 
         customerProfileEntity.setName(updateCustomerProfile.getName());

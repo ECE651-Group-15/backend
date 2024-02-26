@@ -186,11 +186,8 @@ public class CustomerProfileService {
 	}
 
 	public Optional<CustomerProfileEntity> requireUser(String id, String password) {
-		Optional<CustomerProfile> customerProfile =
-				customerProfileRepository.getCustomerProfile(id)
-										 .map(CustomerProfileEntity::toDomain);
-		return customerProfile.filter(profile -> profile.getPassword().equals(password))
-							  .map(CustomerProfileEntity::fromDomain);
+		return customerProfileRepository.getCustomerProfile(id)
+										.filter(profile -> profile.getPassword().equals(password));
 	}
 
 	public List<CustomerProfile> getCustomerProfileByPage(int page,
@@ -199,5 +196,16 @@ public class CustomerProfileService {
 										.stream()
 										.map(CustomerProfileEntity::toDomain)
 										.toList();
+	}
+
+	public Optional<CustomerProfile> customerLogin(Login login) {
+		if (login.getEmail().isEmpty() || login.getPassword().isEmpty()) {
+			return Optional.empty();
+		}
+		Optional<CustomerProfile> existedCustomer = customerProfileRepository.getCustomerProfileByEmail(login.getEmail().get())
+																			 .map(CustomerProfileEntity::toDomain);
+		return existedCustomer.flatMap(customerProfile -> requireUser(customerProfile.getId(),
+																	  login.getPassword().get()).map(CustomerProfileEntity::toDomain));
+
 	}
 }
