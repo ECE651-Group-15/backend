@@ -572,4 +572,90 @@ public class CustomerProfileServiceTest {
 		assertEquals("tester_2@gmail.com", Customer_2.getEmail());
 	}
 
+
+
+	@Test
+	public void shouldReturnEmptyWhenNoCustomerExists() {
+		Login login = Login.builder()
+				.email(Optional.of("email@example.com"))
+				.password(Optional.of("password"))
+				.build();
+		when(customerProfileRepository.getCustomerProfileByEmail(String.valueOf(login.getEmail()))).thenReturn(Optional.empty());
+
+		assertTrue(customerProfileService.customerLogin(login).isEmpty());
+	}
+
+
+
+	@Test
+	public void shouldReturnEmptyWhenCustomerExistsButPasswordDoesNotMatch() {
+		String email = "email@example.com";
+		String password = "password";
+		Login login = new Login(Optional.of(email), Optional.of(password));
+		CustomerProfileEntity customerProfileEntity = new CustomerProfileEntity();
+		CustomerProfile customerProfile = CustomerProfile.builder()
+				.id("profileId")
+				.email("email@example.com")
+				.password("password")
+				.name("tester")
+				.avatar("123")
+				.phone(Optional.of("123456"))
+				.longitude(Optional.of(0.0))
+				.latitude(Optional.of(0.0))
+				.postedListingIds(Optional.of(List.of()))
+				.starredListingIds(Optional.of(List.of()))
+				.build();
+
+		when(customerProfileRepository.getCustomerProfileByEmail(email)).thenReturn(Optional.of(customerProfileEntity));
+
+
+		Optional<CustomerProfile> result = customerProfileService.customerLogin(login);
+
+		assertTrue(result.isEmpty());
+	}
+
+
+	@Test
+	public void customerLogin_WithInvalidEmail_ReturnsEmptyOptional() {
+		Login login = Login.builder()
+				.email(Optional.of("invalid@email.com"))
+				.password(Optional.of("password"))
+				.build();
+		when(customerProfileRepository.getCustomerProfileByEmail(anyString())).thenReturn(Optional.empty());
+
+		Optional<CustomerProfile> result = customerProfileService.customerLogin(login);
+
+		assertFalse(result.isPresent());
+	}
+
+	@Test
+	public void customerLogin_WithInvalidPassword_ReturnsEmptyOptional() {
+		Login login = Login.builder()
+				.email(Optional.of("valid@email.com"))
+				.password(Optional.of("invalidPassword"))
+				.build();
+		CustomerProfileEntity customerProfileEntity = Mockito.mock(CustomerProfileEntity.class);
+
+
+		when(customerProfileRepository.getCustomerProfileByEmail(any())).thenReturn(Optional.of(customerProfileEntity));
+
+		Optional<CustomerProfile> result = customerProfileService.customerLogin(login);
+
+		assertFalse(result.isPresent());
+	}
+
+	@Test
+	public void customerLogin_WithEmptyCredentials_ReturnsEmptyOptional() {
+		Login loginWithEmptyEmail = Login.builder()
+				.email(Optional.of(""))
+				.password(Optional.of("password"))
+				.build();
+		Login loginWithEmptyPassword = Login.builder()
+				.email(Optional.of("email@email.com"))
+				.password(Optional.of(""))
+				.build();
+
+		assertTrue(customerProfileService.customerLogin(loginWithEmptyEmail).isEmpty());
+		assertTrue(customerProfileService.customerLogin(loginWithEmptyPassword).isEmpty());
+	}
 }
