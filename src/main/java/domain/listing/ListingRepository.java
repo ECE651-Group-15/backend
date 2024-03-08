@@ -9,6 +9,7 @@ public interface ListingRepository {
     void save(ListingEntity listingEntity);
     Optional<ListingEntity> getListing(String id);
     List<ListingEntity> getListingPage(int pageNumber, int pageSizeIn);
+	List<ListingEntity> getListingByTitle(String title);
     Optional<ListingEntity> updateListing(UpdateListing updateListing);
     Optional<ListingEntity> deleteListing(ListingEntity listingEntity);
 }

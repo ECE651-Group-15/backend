@@ -238,4 +238,11 @@ public class ListingService {
                                 .map(Optional::get)
                                 .toList();
     }
+
+	public List<ListingDetails> searchListing(SearchListing searchListing) {
+		return listingRepository.getListingByTitle(searchListing.getTitle())
+								.stream()
+								.map(ListingEntity::toDomain)
+								.toList();
+	}
 }

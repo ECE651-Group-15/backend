@@ -40,6 +40,11 @@ public class PanacheListingRepository implements ListingRepository, PanacheRepos
         return query.list();
     }
 
+	@Override
+	public List<ListingEntity> getListingByTitle(String title) {
+		return list("title like ?1", "%" + title + "%");
+	}
+
     @Override
     @Transactional
     public Optional<ListingEntity> updateListing(UpdateListing updateListing) {
