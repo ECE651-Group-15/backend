@@ -208,4 +208,10 @@ public class CustomerProfileService {
 																	  login.getPassword().get()).map(CustomerProfileEntity::toDomain));
 
 	}
+
+	public Optional<CustomerProfile> checkEmail(String email) {
+		return customerProfileRepository.getCustomerProfileByEmail(email)
+										.map(CustomerProfileEntity::toDomain);
+
+	}
 }

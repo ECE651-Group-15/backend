@@ -4,6 +4,7 @@ import domain.profile.CustomerProfile;
 import domain.profile.CustomerProfileService;
 import infrastructure.dto.ApiResponse;
 import infrastructure.dto.in.listing.PageDto;
+import infrastructure.dto.in.profile.CheckEmailDto;
 import infrastructure.dto.in.profile.CreateCustomerProfileDto;
 import infrastructure.dto.in.profile.LoginDto;
 import infrastructure.dto.in.profile.UpdateCustomerProfileDto;
@@ -144,6 +145,23 @@ public class CustomerProfileResources {
 		Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.customerLogin(loginDto.toDomain());
 		if (fetchedCustomerProfile.isEmpty()) {
 			response.setMessage(Optional.of("Cannot find customer with email " + loginDto.email().get() + " and provided password."));
+			response.setCode(4001);
+		} else {
+			response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(fetchedCustomerProfile.get())));
+		}
+		return Response.ok(response).build();
+	}
+
+	@POST
+	@Path("/check-email")
+	public Response customerLogin(CheckEmailDto checkEmailDto) {
+		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
+																			 200,
+																			 Optional.empty());
+
+		Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.checkEmail(checkEmailDto.email());
+		if (fetchedCustomerProfile.isEmpty()) {
+			response.setMessage(Optional.of("Cannot find customer with email " + checkEmailDto.email() + "."));
 			response.setCode(4001);
 		} else {
 			response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(fetchedCustomerProfile.get())));
