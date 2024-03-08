@@ -42,6 +42,7 @@ public class PanacheCustomerProfileRepository implements CustomerProfileReposito
 
         customerProfileEntity.setName(updateCustomerProfile.getName());
         customerProfileEntity.setPassword(updateCustomerProfile.getPassword());
+		customerProfileEntity.setAvatar(updateCustomerProfile.getAvatar().orElse(customerProfileEntity.getAvatar()));
         customerProfileEntity.setPhone(updateCustomerProfile.getPhone().orElse(customerProfileEntity.getPhone()));
         customerProfileEntity.setLongitude(updateCustomerProfile.getLongitude().orElse(customerProfileEntity.getLongitude()));
         customerProfileEntity.setLatitude(updateCustomerProfile.getLatitude().orElse(customerProfileEntity.getLatitude()));
