@@ -4,6 +4,7 @@ import domain.listing.ListingDetails;
 import domain.listing.ListingService;
 import infrastructure.dto.ApiResponse;
 import infrastructure.dto.in.listing.CreateListingDto;
+import infrastructure.dto.in.listing.SearchListingDto;
 import infrastructure.dto.in.listing.UpdateListingDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
 import infrastructure.result.UpdateListingResult;
@@ -15,6 +16,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -92,5 +94,23 @@ public class ListingResources {
         }
         return Response.ok(response).build();
     }
+
+	@POST
+	@Path("/search-listing")
+	public Response searchListing(SearchListingDto searchListingDto) {
+		List<ListingDetails> fetchedListings = listingService.searchListing(searchListingDto.toDomain());
+		ApiResponse<List<ListingDetailsDto>> response = new ApiResponse<>(Optional.empty(),
+																	200,
+																	Optional.empty());
+		if (!fetchedListings.isEmpty()) {
+			response.setData(Optional.of(fetchedListings.stream()
+														.map(ListingDetailsDto::fromDomain)
+														.toList()));
+		} else {
+			response.setMessage(Optional.of("Cannot find any listing with given search criteria."));
+			response.setCode(4001);
+		}
+		return Response.ok(response).build();
+	}
 
 }
