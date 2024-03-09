@@ -633,4 +633,5 @@ public class CustomerProfileServiceTest {
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyEmail).isEmpty());
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyPassword).isEmpty());
 	}
+
 }
