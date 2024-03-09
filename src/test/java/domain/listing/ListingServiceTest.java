@@ -605,6 +605,34 @@ public class ListingServiceTest {
 		assertEquals(customerProfile, Info.customerProfile());
 	}
 
+	@Test
+	public void searchListing_WhenListingNotExists_ReturnEmpty() {
+		String title = "Non_existing title";
+		SearchListing searchListing = SearchListing.builder()
+												   .title(title)
+												   .build();
+		ListingEntity listingEntity = Mockito.mock(ListingEntity.class);
+		when(listingRepository.getListingByTitle(title)).thenReturn(List.of());
+		List<ListingDetails> results = listingService.searchListing(searchListing);
+		assertTrue(results.isEmpty());
+	}
+	@Test
+	public void searchListing_WhenListingExists_ReturnEmpty(){
+		String title = "Existing title";
+		SearchListing samplesearchListing = SearchListing.builder()
+												   .title(title)
+												   .build();
+		ListingEntity listingEntity = Mockito.mock(ListingEntity.class);
+		listingEntity.setTitle("Existing title");
+		listingEntity.setId("1234");
+		when(listingRepository.getListingByTitle(title)).thenReturn(Collections.singletonList(listingEntity));
+		List<ListingDetails> result = listingService.searchListing(samplesearchListing);
+		assertFalse(result.isEmpty());
+		ListingDetails expectedDetails = listingEntity.toDomain();
+		assertEquals(expectedDetails, result.get(0));
+
+	}
+
 
 }
 
