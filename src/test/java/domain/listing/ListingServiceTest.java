@@ -616,12 +616,13 @@ public class ListingServiceTest {
 		List<ListingDetails> results = listingService.searchListing(searchListing);
 		assertTrue(results.isEmpty());
 	}
+
 	@Test
-	public void searchListing_WhenListingExists_ReturnEmpty(){
+	public void searchListing_WhenListingExists_ReturnEmpty() {
 		String title = "Existing title";
 		SearchListing samplesearchListing = SearchListing.builder()
-												   .title(title)
-												   .build();
+														 .title(title)
+														 .build();
 		ListingEntity listingEntity = Mockito.mock(ListingEntity.class);
 		listingEntity.setTitle("Existing title");
 		listingEntity.setId("1234");
