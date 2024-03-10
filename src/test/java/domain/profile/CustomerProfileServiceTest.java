@@ -635,8 +635,6 @@ public class CustomerProfileServiceTest {
 	}
 
 
-
-
 	@Test
 	void checkEmail_ExistingEmail() {
 		String email = "test@example.com";
