@@ -633,4 +633,27 @@ public class CustomerProfileServiceTest {
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyEmail).isEmpty());
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyPassword).isEmpty());
 	}
+
+
+	@Test
+	void checkEmail_ExistingEmail() {
+		String email = "test@example.com";
+		CustomerProfileEntity customerprofileentity = new CustomerProfileEntity();
+		when(customerProfileRepository.getCustomerProfileByEmail(email)).thenReturn(Optional.of(customerprofileentity));
+
+		Optional<CustomerProfile> result = customerProfileService.checkEmail(email);
+
+		assertTrue(result.isPresent());
+	}
+
+	@Test
+	void checkEmail_NonExistingEmail() {
+		String email = "nonexistent@example.com";
+		when(customerProfileRepository.getCustomerProfileByEmail(email)).thenReturn(Optional.empty());
+
+		Optional<CustomerProfile> result = customerProfileService.checkEmail(email);
+
+		assertFalse(result.isPresent());
+	}
+
 }
