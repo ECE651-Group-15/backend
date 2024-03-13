@@ -24,84 +24,86 @@ import java.util.Optional;
 @Produces("application/json")
 public class ListingResources {
 
-    @Inject
-    ListingService listingService;
+	@Inject
+	ListingService listingService;
 
-    @POST
-    @Path("/create-listing")
-    public Response createListing(CreateListingDto createListingDto) {
-        ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                    200,
-                                                                    Optional.empty());
-        Optional<ListingDetails> createdListing = listingService.createListing(createListingDto.toDomain());
-        if (createdListing.isEmpty()) {
-            response.setMessage(Optional.of("Cannot find create listing with customer id: " + createListingDto.customerId() + "."));
-            response.setCode(4001);
-        } else {
-            response.setData(Optional.of(ListingDetailsDto.fromDomain(createdListing.get())));
-        }
-        return Response.ok(response).build();
-    }
+	@POST
+	@Path("/create-listing")
+	public Response createListing(CreateListingDto createListingDto) {
+		ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
+																	200,
+																	Optional.empty());
+		Optional<ListingDetails> createdListing = listingService.createListing(createListingDto.toDomain());
+		if (createdListing.isEmpty()) {
+			response.setMessage(Optional.of("Cannot find create listing with customer id: " + createListingDto.customerId() + "."));
+			response.setCode(4001);
+		} else {
+			response.setData(Optional.of(ListingDetailsDto.fromDomain(createdListing.get())));
+		}
+		return Response.ok(response).build();
+	}
 
-    @POST
-    @Path("/get-listing/{listingId}")
-    public Response getListing(@PathParam("listingId") String listingId) {
-        Optional<ListingDetails> fetchedListing = listingService.getListing(listingId);
-        ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                    200,
-                                                                    Optional.empty());
-        if (fetchedListing.isPresent()) {
-            response.setData(Optional.of(ListingDetailsDto.fromDomain(fetchedListing.get())));
-        } else {
-            response.setMessage(Optional.of("Cannot find listing with id " + listingId + "."));
-            response.setCode(4001);
-        }
+	@POST
+	@Path("/get-listing/{listingId}")
+	public Response getListing(@PathParam("listingId") String listingId) {
+		Optional<ListingDetails> fetchedListing = listingService.getListing(listingId);
+		ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
+																	200,
+																	Optional.empty());
+		if (fetchedListing.isPresent()) {
+			response.setData(Optional.of(ListingDetailsDto.fromDomain(fetchedListing.get())));
+		} else {
+			response.setMessage(Optional.of("Cannot find listing with id " + listingId + "."));
+			response.setCode(4001);
+		}
 
-        return Response.ok(response).build();
-    }
+		return Response.ok(response).build();
+	}
 
-    @POST
-    @Path("/update-listing")
-    public Response updateListing(UpdateListingDto updateListingDto) {
-        UpdateListingResult updateListingResult = listingService.updateListing(updateListingDto.toDomain());
-        ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                    200,
-                                                                    Optional.empty());
-        if (updateListingResult.getUpdatedListing().isPresent()) {
-            response.setData(Optional.of(ListingDetailsDto.fromDomain(updateListingResult.getUpdatedListing().get())));
-        } else if (updateListingResult.isCustomerNotFound()) {
-            response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as customer was not found with given ID."));
-            response.setCode(4001);
-        } else if (updateListingResult.isListingNotFound()) {
-            response.setMessage(Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
-            response.setCode(4001);
-        }
-        return Response.ok(response).build();
-    }
+	@POST
+	@Path("/update-listing")
+	public Response updateListing(UpdateListingDto updateListingDto) {
+		UpdateListingResult updateListingResult = listingService.updateListing(updateListingDto.toDomain());
+		ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
+																	200,
+																	Optional.empty());
+		if (updateListingResult.getUpdatedListing().isPresent()) {
+			response.setData(Optional.of(ListingDetailsDto.fromDomain(updateListingResult.getUpdatedListing().get())));
+		} else if (updateListingResult.isCustomerNotFound()) {
+			response.setMessage(
+					Optional.of("Cannot update listing with id " + updateListingDto.id() + " as customer was not found with given ID."));
+			response.setCode(4001);
+		} else if (updateListingResult.isListingNotFound()) {
+			response.setMessage(
+					Optional.of("Cannot update listing with id " + updateListingDto.id() + " as listing was not found with given ID."));
+			response.setCode(4001);
+		}
+		return Response.ok(response).build();
+	}
 
-    @POST
-    @Path("/delete-listing/{listingId}")
-    public Response deleteListing(@PathParam("listingId") String listingId) {
-        Optional<ListingDetails> deletedListing = listingService.deleteListing(listingId);
-        ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
-                                                                    200,
-                                                                    Optional.empty());
-        if (deletedListing.isPresent()) {
-            response.setData(Optional.of(ListingDetailsDto.fromDomain(deletedListing.get())));
-        } else {
-            response.setMessage(Optional.of("Cannot delete listing with id " + listingId + " as listing was not found with given ID."));
-            response.setCode(4001);
-        }
-        return Response.ok(response).build();
-    }
+	@POST
+	@Path("/delete-listing/{listingId}")
+	public Response deleteListing(@PathParam("listingId") String listingId) {
+		Optional<ListingDetails> deletedListing = listingService.deleteListing(listingId);
+		ApiResponse<ListingDetailsDto> response = new ApiResponse<>(Optional.empty(),
+																	200,
+																	Optional.empty());
+		if (deletedListing.isPresent()) {
+			response.setData(Optional.of(ListingDetailsDto.fromDomain(deletedListing.get())));
+		} else {
+			response.setMessage(Optional.of("Cannot delete listing with id " + listingId + " as listing was not found with given ID."));
+			response.setCode(4001);
+		}
+		return Response.ok(response).build();
+	}
 
 	@POST
 	@Path("/search-listing")
 	public Response searchListing(SearchListingDto searchListingDto) {
 		List<ListingDetails> fetchedListings = listingService.searchListing(searchListingDto.toDomain());
 		ApiResponse<List<ListingDetailsDto>> response = new ApiResponse<>(Optional.empty(),
-																	200,
-																	Optional.empty());
+																		  200,
+																		  Optional.empty());
 		if (!fetchedListings.isEmpty()) {
 			response.setData(Optional.of(fetchedListings.stream()
 														.map(ListingDetailsDto::fromDomain)

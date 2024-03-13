@@ -42,7 +42,10 @@ public class ListingResourcesIT {
 			  "images": []
 			}
 			""";
-
+	private final String VALID_SEARCH_LISTING_TEMPLATE = """
+			{
+			  "title": "%s"
+			}""";
 	@BeforeEach
 	public void setup() {
 		String customerProfile = """
@@ -218,4 +221,31 @@ public class ListingResourcesIT {
 				   .body("code", is(4001))
 				   .body("message", containsString("Cannot find listing with id " + listingId));
 	}
+	@Test
+	public void searchListing_WhenListingNotExists_ReturnErrorMessage(){
+		String validSearchListing = String.format(VALID_SEARCH_LISTING_TEMPLATE,"Non-existing title");
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(validSearchListing)
+				   .when().post("/v1/api/listings/search-listing")
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001))
+				   .body("message",
+						 containsString("Cannot find any listing with given search criteria."));
+
+	}
+	@Test
+	public void searchListing_WhenListingsExistWithTitle_ReturnListingDetails(){
+		String validSearchListing = String.format(VALID_SEARCH_LISTING_TEMPLATE,"Vintage");
+		createListing();
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(validSearchListing)
+				   .when().post("/v1/api/listings/search-listing")
+				   .then()
+				   .statusCode(200)
+				   .body("data[0].title",containsString("Vintage"));
+	}
 }
+
