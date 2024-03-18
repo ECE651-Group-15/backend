@@ -163,7 +163,10 @@ public class CustomerListingResources {
                                                                                  fetchedCustomerProfile.get().getStarredListingIds());
             response.setData(Optional.of(StarredListingPageDto.builder()
                                                               .starredListings(
-                                                                      starredListings.stream().map(ListingDetailsDto::fromDomain).toList())
+                                                                      starredListings.stream()
+																					 .filter(listingDetails -> listingDetails.getStatus()
+																															 .equals(ListingStatus.ACTIVE))
+																					 .map(ListingDetailsDto::fromDomain).toList())
                                                               .build()));
         } else {
             response.setMessage(Optional.of("Cannot find customer with id " + customerListingsDto.customerId() + "."));
