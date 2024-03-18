@@ -359,6 +359,56 @@ public class ListingServiceTest {
 
 	}
 
+
+
+
+
+
+
+
+
+
+	@Test
+	public void updateListing_WhenListingExists_ReturnUpdatedListing() {
+		UpdateListing updateListing = UpdateListing.builder()
+				.id("listingID")
+				.customerId("customerID")
+				.status(ListingStatus.ACTIVE)
+				.images(Collections.singletonList("image.jpg"))
+				.category(Category.BOOKS)
+				.title("title")
+				.description("description")
+				.price(Optional.of(0.0))
+				.latitude(0.0)
+				.longitude(0.0)
+				.build();
+
+		CustomerProfileEntity mockProfile = Mockito.mock(CustomerProfileEntity.class);
+		ListingEntity mockListingEntity = Mockito.mock(ListingEntity.class);
+
+		when(customerProfileRepository.getCustomerProfile("customerID")).thenReturn(Optional.of(mockProfile));
+		when(listingRepository.updateListing(updateListing)).thenReturn(Optional.of(mockListingEntity));
+		ListingDetails listingDetails = Mockito.mock(ListingDetails.class);
+		when(mockListingEntity.toDomain()).thenReturn(listingDetails);
+		UpdateListingResult result = listingService.updateListing(updateListing);
+
+		assertTrue(result.getUpdatedListing().isPresent());
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	@Test
 	public void deleteListing_WhenDeleteListing_ListingNotExist_ReturnEmpty() {
 		String listingID = "listingID";
@@ -504,6 +554,94 @@ public class ListingServiceTest {
 		assertEquals(listingDetails, result.getListingDetails().get());
 	}
 
+
+
+
+
+
+
+
+
+
+
+	@Test
+	public void starListing_WhenListingDoesNotExist_ReturnListingNotFound() {
+		StarListing starListing = StarListing.builder()
+				.listingId("listingID")
+				.customerId("customerID")
+				.build();
+
+		when(customerProfileRepository.getCustomerProfile("customerID")).thenReturn(Optional.of(new CustomerProfileEntity()));
+		when(listingRepository.getListing("listingID")).thenReturn(Optional.empty());
+
+		ListingStarResult result = listingService.starListing(starListing);
+
+		assertTrue(result.isListingNotFound());
+	}
+
+	@Test
+	public void unStarListing_WhenListingDoesNotExist_ReturnListingNotFound() {
+		StarListing starListing = StarListing.builder()
+				.listingId("listingID")
+				.customerId("customerID")
+				.build();
+
+		when(customerProfileRepository.getCustomerProfile("customerID")).thenReturn(Optional.of(new CustomerProfileEntity()));
+		when(listingRepository.getListing("listingID")).thenReturn(Optional.empty());
+
+		ListingUnStarResult result = listingService.unStarListing(starListing);
+
+		assertTrue(result.isListingNotFound());
+	}
+
+
+
+
+
+
+
+	@Test
+	public void unStarListing_WhenCustomerAlreadyStarred_RemoveStar() {
+		StarListing starListing = StarListing.builder()
+				.listingId("listingID")
+				.customerId("customerID")
+				.build();
+
+		ListingEntity mockListingEntity = Mockito.mock(ListingEntity.class);
+		CustomerProfileEntity mockProfileEntity = Mockito.mock(CustomerProfileEntity.class);
+		List<CustomerProfileEntity> customersWhoStarred = new ArrayList<>();
+		customersWhoStarred.add(mockProfileEntity);
+
+		when(listingRepository.getListing("listingID")).thenReturn(Optional.of(mockListingEntity));
+		when(customerProfileRepository.getCustomerProfile("customerID")).thenReturn(Optional.of(mockProfileEntity));
+		when(mockListingEntity.getCustomersWhoStarred()).thenReturn(customersWhoStarred);
+
+		ListingUnStarResult result = listingService.unStarListing(starListing);
+
+		assertFalse(customersWhoStarred.contains(mockProfileEntity));
+		assertFalse(result.isListingNotFound());
+		assertEquals(result.getListingDetails(), Optional.empty());
+		assertFalse(result.isCustomerNotFound());
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	@Test
 	public void getListingPage_WhenGettingListingPage_listingIDsEmpty_ReturnEmpty() {
 		List<ListingDetails> result = listingService.getListingPage(1, Optional.of(20), Optional.empty());
@@ -569,6 +707,20 @@ public class ListingServiceTest {
 		assertFalse(result.isEmpty());
 		assertEquals(1, result.size());
 	}
+
+
+
+	@Test
+	public void getListingPage_WhenPageNumberTooHigh_ReturnEmptyList() {
+		List<String> listingIds = List.of("123", "345", "456");
+		int page = 10;
+		Optional<Integer> pageSize = Optional.of(20);
+
+		List<ListingDetails> result = listingService.getListingPage(page, pageSize, Optional.of(listingIds));
+
+		assertTrue(result.isEmpty());
+	}
+
 
 	@Test
 	public void getListingAndCustomerByPage_WhenPageAndPageSizeValid_ReturnListingWithCustomerInfo() {
