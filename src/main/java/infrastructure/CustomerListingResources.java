@@ -2,15 +2,17 @@ package infrastructure;
 
 import domain.listing.ListingDetails;
 import domain.listing.ListingService;
+import domain.listing.ListingStatus;
 import domain.profile.CustomerProfile;
 import domain.profile.CustomerProfileService;
 import infrastructure.dto.ApiResponse;
 import infrastructure.dto.in.listing.PageDto;
 import infrastructure.dto.in.listing.StarListingDto;
 import infrastructure.dto.in.profile.GetCustomerListingsDto;
-import infrastructure.dto.out.listing.ListingWithCustomerInfoDto;
+import infrastructure.dto.out.listing.CompletedListingPageDto;
 import infrastructure.dto.out.listing.ListingDetailsDto;
 import infrastructure.dto.out.listing.ListingPageDetailsDto;
+import infrastructure.dto.out.listing.ListingWithCustomerInfoDto;
 import infrastructure.dto.out.listing.PostedListingPageDto;
 import infrastructure.dto.out.listing.StarredListingPageDto;
 import infrastructure.result.CustomerStarResult;
@@ -68,12 +70,12 @@ public class CustomerListingResources {
 
 		ListingUnStarResult listingUnStarResult = listingService.unStarListing(starListingDto.toDomain());
 		CustomerUnStarResult customerUnStarResult = customerProfileService.unStarListing(starListingDto.toDomain());
-		if (listingUnStarResult.isCustomerNotFound() || customerUnStarResult.isCustomerNotFound()) {
+		if (listingUnStarResult.isCustomerNotFound()) {
 			response.setMessage(Optional.of("Cannot find customer with id " + starListingDto.customerId() + "."));
 			response.setCode(4001);
 			return Response.ok(response).build();
 		}
-		if (listingUnStarResult.isListingNotFound() || customerUnStarResult.isListingNotFound()) {
+		if (customerUnStarResult.isListingNotFound()) {
 			response.setMessage(Optional.of("Cannot find listing with id " + starListingDto.listingId() + "."));
 			response.setCode(4001);
 			return Response.ok(response).build();
@@ -86,10 +88,8 @@ public class CustomerListingResources {
 
     @POST
     @Path("/get-customer-posted-listings")
-
     public Response getCustomerPostedListings(GetCustomerListingsDto getCustomerListingsDto) {
-
-        Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.getCustomerProfile(getCustomerListingsDto.customerId());
+        Optional<CustomerProfile> fetchedCustomerProfile = getCustomerProfile(getCustomerListingsDto.customerId());
         ApiResponse<PostedListingPageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
 
         if (getCustomerListingsDto.page() < 0) {
@@ -103,7 +103,10 @@ public class CustomerListingResources {
                                                                                 fetchedCustomerProfile.get().getPostedListingIds());
             response.setData(Optional.of(PostedListingPageDto.builder()
                                                              .postedListings(
-                                                                     postedListings.stream().map(ListingDetailsDto::fromDomain).toList())
+																	 postedListings.stream()
+																				   .filter(listingDetails -> listingDetails.getStatus()
+																														   .equals(ListingStatus.ACTIVE))
+																				   .map(ListingDetailsDto::fromDomain).toList())
                                                              .build()));
         } else {
             response.setMessage(Optional.of("Cannot find customer with id " + getCustomerListingsDto.customerId() + "."));
@@ -113,10 +116,40 @@ public class CustomerListingResources {
         return Response.ok(response).build();
     }
 
+	@POST
+	@Path("/get-customer-completed-listings")
+	public Response getCustomerCompletedListings(GetCustomerListingsDto getCustomerListingsDto) {
+		Optional<CustomerProfile> fetchedCustomerProfile = getCustomerProfile(getCustomerListingsDto.customerId());
+		ApiResponse<CompletedListingPageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
+
+		if (getCustomerListingsDto.page() < 0) {
+			response.setMessage(Optional.of("Page number cannot be negative."));
+			response.setCode(4001);
+			return Response.ok(response).build();
+		}
+		if (fetchedCustomerProfile.isPresent()) {
+			List<ListingDetails> postedListings = listingService.getListingPage(getCustomerListingsDto.page(),
+																				getCustomerListingsDto.pageSize(),
+																				fetchedCustomerProfile.get().getPostedListingIds());
+			response.setData(Optional.of(CompletedListingPageDto.builder()
+																.completedListings(
+																		postedListings.stream()
+																					  .filter(listingDetails -> listingDetails.getStatus()
+																															  .equals(ListingStatus.INACTIVE))
+																					  .map(ListingDetailsDto::fromDomain).toList())
+																.build()));
+		} else {
+			response.setMessage(Optional.of("Cannot find customer with id " + getCustomerListingsDto.customerId() + "."));
+			response.setCode(4001);
+		}
+
+		return Response.ok(response).build();
+	}
+
     @POST
     @Path("/starred-listings")
     public Response getStarredListings(GetCustomerListingsDto customerListingsDto) {
-        Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.getCustomerProfile(customerListingsDto.customerId());
+        Optional<CustomerProfile> fetchedCustomerProfile = getCustomerProfile(customerListingsDto.customerId());
         ApiResponse<StarredListingPageDto> response = new ApiResponse<>(Optional.empty(), 200, Optional.empty());
 
         if (customerListingsDto.page() < 0) {
@@ -130,7 +163,10 @@ public class CustomerListingResources {
                                                                                  fetchedCustomerProfile.get().getStarredListingIds());
             response.setData(Optional.of(StarredListingPageDto.builder()
                                                               .starredListings(
-                                                                      starredListings.stream().map(ListingDetailsDto::fromDomain).toList())
+                                                                      starredListings.stream()
+																					 .filter(listingDetails -> listingDetails.getStatus()
+																															 .equals(ListingStatus.ACTIVE))
+																					 .map(ListingDetailsDto::fromDomain).toList())
                                                               .build()));
         } else {
             response.setMessage(Optional.of("Cannot find customer with id " + customerListingsDto.customerId() + "."));
@@ -184,4 +220,8 @@ public class CustomerListingResources {
         response.setData(Optional.ofNullable(listingAndCustomerDetails));
         return Response.ok(response).build();
     }
+
+	Optional<CustomerProfile> getCustomerProfile(String customerId) {
+		return customerProfileService.getCustomerProfile(customerId);
+	}
 }

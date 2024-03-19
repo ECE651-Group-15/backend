@@ -57,7 +57,6 @@ public class ListingService {
         List<ListingEntity> postedListings = customerProfileEntity.get().getPostedListings();
         postedListings.add(listingEntity);
         customerProfileEntity.get().setPostedListings(postedListings);
-//        customerProfileRepository.updateCustomerProfile(customerProfileEntity.get());
         listingRepository.save(listingEntity);
         return Optional.of(listingDetails);
     }
@@ -213,8 +212,8 @@ public class ListingService {
                 }
                 String listingId = listingIds.get().get(i);
                 Optional<ListingDetails> listing = listingRepository.getListing(listingId)
-                                                                    .map(ListingEntity::toDomain);
-                listing.ifPresent(list -> listings.add(list));
+																	.map(ListingEntity::toDomain);
+                listing.ifPresent(listings::add);
             }
             listings.sort((l1, l2) -> Long.compare(l2.getUpdatedAt(), l1.getUpdatedAt()));
             return listings;
@@ -224,7 +223,8 @@ public class ListingService {
     public List<ListingWithCustomerInfo> getListingAndCustomerByPage(int page, int pageSize) {
         return listingRepository.getListingPage(page, pageSize)
                                 .stream()
-                                .map(listingEntity -> {
+								.filter(listingEntity -> listingEntity.getStatus().equals(ListingStatus.ACTIVE))
+								.map(listingEntity -> {
                                     Optional<CustomerProfileEntity> customerProfileEntity =
                                             customerProfileRepository.getCustomerProfile(listingEntity.getCustomerProfile().getId());
                                     return customerProfileEntity.map(customerProfile -> ListingWithCustomerInfo.builder()
@@ -242,6 +242,7 @@ public class ListingService {
 	public List<ListingDetails> searchListing(SearchListing searchListing) {
 		return listingRepository.getListingByTitle(searchListing.getTitle())
 								.stream()
+								.filter(listingEntity -> listingEntity.getStatus().equals(ListingStatus.ACTIVE))
 								.map(ListingEntity::toDomain)
 								.toList();
 	}
