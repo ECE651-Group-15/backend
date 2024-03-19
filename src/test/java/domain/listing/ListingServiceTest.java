@@ -731,6 +731,7 @@ public class ListingServiceTest {
 		when(listingRepository.getListingPage(page, pageSize)).thenReturn(List.of(mockListingEntity));
 
 		when(mockListingEntity.getCustomerProfile()).thenReturn(mockCustomerProfileEntity);
+		when(mockListingEntity.getStatus()).thenReturn(ListingStatus.ACTIVE);
 		when(mockCustomerProfileEntity.getId()).thenReturn("customerId");
 		when(customerProfileRepository.getCustomerProfile("customerId")).thenReturn(Optional.of(mockCustomerProfileEntity));
 
@@ -779,6 +780,7 @@ public class ListingServiceTest {
 		listingEntity.setTitle("Existing title");
 		listingEntity.setId("1234");
 		when(listingRepository.getListingByTitle(title)).thenReturn(Collections.singletonList(listingEntity));
+		when(listingEntity.getStatus()).thenReturn(ListingStatus.ACTIVE);
 		List<ListingDetails> result = listingService.searchListing(samplesearchListing);
 		assertFalse(result.isEmpty());
 		ListingDetails expectedDetails = listingEntity.toDomain();
