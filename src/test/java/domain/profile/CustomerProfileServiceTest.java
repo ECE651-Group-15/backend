@@ -621,19 +621,23 @@ public class CustomerProfileServiceTest {
 	}
 
 	@Test
-	public void customerLogin_WithEmptyCredentials_ReturnsEmptyOptional() {
-		Login loginWithEmptyEmail = Login.builder()
-										 .email(Optional.of(""))
-										 .password(Optional.of("password"))
-										 .build();
+	public void customerLogin_WithEmptyPassword_ReturnsEmptyOptional() {
+
 		Login loginWithEmptyPassword = Login.builder()
 											.email(Optional.of("email@email.com"))
-											.password(Optional.of(""))
+											.password(Optional.empty())
 											.build();
-		assertTrue(customerProfileService.customerLogin(loginWithEmptyEmail).isEmpty());
+
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyPassword).isEmpty());
 	}
-
+	@Test
+	public void customerLogin_WithEmptyEmail_ReturnsEmptyOptional(){
+		Login loginWithEmptyEmail = Login.builder()
+										 .email(Optional.empty())
+										 .password(Optional.of("password"))
+										 .build();
+		assertTrue(customerProfileService.customerLogin(loginWithEmptyEmail).isEmpty());
+	}
 
 	@Test
 	void checkEmail_ExistingEmail() {
