@@ -3,12 +3,19 @@ package infrastructure;
 import domain.listing.Category;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+
+
+
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
+
 
 @QuarkusTest
 public class CustomerListingResourcesIT {
@@ -61,7 +68,35 @@ public class CustomerListingResourcesIT {
             }
             """;
 
-    private void deleteCustomerProfile(String customerId) {
+
+
+
+
+
+
+
+	private final String VALID_GET_COMPLETED_LISTING_TEMPLATE = """
+        {
+            "page": %d,
+            "pageSize": %d,
+            "customerId": "%s"
+        }
+        """;
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+	private void deleteCustomerProfile(String customerId) {
         RestAssured.given()
 				   .contentType("application/json")
 				   .when().post("/v1/api/profile/delete-profile/" + customerId)
@@ -69,6 +104,7 @@ public class CustomerListingResourcesIT {
 				   .statusCode(200)
 				   .body("data.id", is(customerId));
     }
+
 
     @Test
     public void starListing_whenCustomerNotExists_returnErrorMessage(){
@@ -382,7 +418,128 @@ public class CustomerListingResourcesIT {
 		deleteCustomerProfile(customerId);
     }
 
-    @Test
+
+
+
+
+
+
+
+
+
+
+
+	@Test
+	public void getCustomerCompletedListings_WhenPageIsNegative_ReturnErrorMessage() {
+		String invalidRequest = String.format(VALID_GET_COMPLETED_LISTING_TEMPLATE, -1, 10, "validCustomerId");
+
+		RestAssured.given()
+				.contentType("application/json")
+				.body(invalidRequest)
+				.when()
+				.post("/v1/api/listing-profile/get-customer-completed-listings")
+				.then()
+				.statusCode(200)
+				.body("code", is(4001))
+				.body("message", containsString("Page number cannot be negative."));
+	}
+
+	@Test
+	public void getCustomerCompletedListings_WhenCustomerNotExists_ReturnErrorMessage() {
+		String invalidRequest = String.format(VALID_GET_COMPLETED_LISTING_TEMPLATE, 0, 10, "non-existing-customerId");
+
+		RestAssured.given()
+				.contentType("application/json")
+				.body(invalidRequest)
+				.when()
+				.post("/v1/api/listing-profile/get-customer-completed-listings")
+				.then()
+				.statusCode(200)
+				.body("code", is(4001))
+				.body("message", containsString("Cannot find customer with id non-existing-customerId."));
+	}
+
+
+	@Test
+	public void getCustomerCompletedListings_WhenCustomerExists_ReturnCompletedListings() {
+		String validCustomerId = "validCustomerId";
+
+		String validRequest = String.format(VALID_GET_COMPLETED_LISTING_TEMPLATE, 0, 10, validCustomerId);
+
+		RestAssured.given()
+				.contentType("application/json")
+				.body(validRequest)
+				.when()
+				.post("/v1/api/listing-profile/get-customer-completed-listings")
+				.then()
+				.statusCode(200)
+				.body("data.completedListings", not(empty()));
+	}
+
+	@Test
+	public void getCustomerCompletedListings_WhenCustomerHasCompletedListings_ReturnListings() {
+		String email = UUID.randomUUID() + "@example.com";
+		String expectedName = "Test Customer";
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, expectedName, email, "password");
+		String customerId = RestAssured.given()
+				.contentType("application/json")
+				.body(validProfile)
+				.when()
+				.post("/v1/api/profile/create-profile")
+				.then()
+				.statusCode(200)
+				.extract().path("data.id");
+
+		String inactiveListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
+		// change status from ACTIVE to INACTIVE
+		inactiveListing = inactiveListing.replace("\"status\": \"ACTIVE\"", "\"status\": \"INACTIVE\"");
+
+		String listingId = RestAssured.given()
+				.contentType("application/json")
+				.body(inactiveListing)
+				.when().post("/v1/api/listings/create-listing")
+				.then()
+				.statusCode(200)
+				.extract()
+				.path("data.id");
+
+		String validRequest = String.format(VALID_GET_COMPLETED_LISTING_TEMPLATE, 0, 10, customerId);
+		RestAssured.given()
+				.contentType("application/json")
+				.body(validRequest)
+				.when()
+				.post("/v1/api/listing-profile/get-customer-completed-listings")
+				.then()
+				.statusCode(200)
+				.body("data.completedListings.size()", is(1))
+				.body("data.completedListings[0].id", is(listingId));
+
+		RestAssured.given()
+				.when().post("v1/api/listings/delete-listing/" + listingId)
+				.then()
+				.statusCode(200);
+		deleteCustomerProfile(customerId);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	@Test
     public void getStarredListings_WhenPageIsNegative_ReturnErrorMessage(){
 		String email = UUID.randomUUID() + "@example.com";
 		String expectedName = "Nikola Tesla1";
