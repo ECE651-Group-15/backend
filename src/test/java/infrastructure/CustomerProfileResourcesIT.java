@@ -329,12 +329,55 @@ public class CustomerProfileResourcesIT {
 	}
 
 	@Test
-	public void getCustomerProfilesByPage_PageIsNegative_ReturnErrorMessage(){
+	public void getCustomerProfileByPage_internal_whenCustomerExist_returnsProfile() {
+		final String VALID_CUSTOMER_PROFILE = """
+			{
+			  "name": "%s",
+			  "email": "%s@example.com",
+			  "password": "%s",
+			  "phone": "1234567890"
+			}
+			""";
+
+		String name = UUID.randomUUID().toString();
+
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE,
+		                                    name,
+											UUID.randomUUID(),
+											"123456");
+
+		String customerId = RestAssured.given()
+									   .contentType("application/json")
+									   .body(validProfile)
+									   .when()
+									   .post("/v1/api/profile/create-profile")
+									   .then()
+									   .statusCode(200)
+									   .body("data.name", is(name))
+									   .extract().path("data.id");
+
+
 		RestAssured.given()
-				.contentType("application/json")
-				.when().post("/v1/api/profile/delete-profile/" + "customerId")
-				.then()
-				.statusCode(200)
-				.body("code", is(4001));
+		           .contentType("application/json")
+		           .when().post("/v1/api/profile/get-profile/internal/" + customerId)
+		           .then()
+		           .statusCode(200)
+		           .body("data.id", is(customerId))
+		           .body("data.name", is(name));
+
+		deleteCustomerProfile(customerId);
+	}
+
+	@Test
+	public void getCustomerProfileByPage_internal_whenCustomerDoesNotExist_returnsProfile() {
+		String customerId = UUID.randomUUID().toString();
+
+		RestAssured.given()
+		           .contentType("application/json")
+		           .when().post("/v1/api/profile/get-profile/internal/" + customerId)
+		           .then()
+		           .statusCode(200)
+		           .body("code", is(4001))
+		           .body("message", is("Cannot find customer with id " + customerId + "."));
 	}
 }
