@@ -211,11 +211,11 @@ public class CustomerListingResources {
             return Response.ok(response).build();
         }
         Optional<CustomerProfile> customerProfile = customerProfileService.getCustomerProfile(listingDetails.get().getCustomerId());
-        if (customerProfile.isEmpty()) {
-            response.setMessage(Optional.of("Cannot find customer with id " + listingDetails.get().getCustomerId() + "."));
-            response.setCode(200);
-            return Response.ok(response).build();
-        }
+	    if (customerProfile.isEmpty()) {
+		    response.setMessage(Optional.of("Cannot find customer with id " + listingDetails.get().getCustomerId() + "."));
+		    response.setCode(200);
+		    return Response.ok(response).build();
+	    }
         ListingWithCustomerInfoDto listingAndCustomerDetails = ListingWithCustomerInfoDto.fromDomain(listingDetails.get(), customerProfile.get());
         response.setData(Optional.ofNullable(listingAndCustomerDetails));
         return Response.ok(response).build();
