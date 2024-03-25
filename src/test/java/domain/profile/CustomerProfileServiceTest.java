@@ -2,10 +2,7 @@ package domain.profile;
 
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
-import infrastructure.result.CustomerStarResult;
-import infrastructure.result.CustomerUnStarResult;
-import infrastructure.result.DeleteCustomerResult;
-import infrastructure.result.UpdateCustomerProfileResult;
+import infrastructure.result.*;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import io.quarkus.test.InjectMock;
@@ -207,17 +204,29 @@ public class CustomerProfileServiceTest {
 		UpdateCustomerProfile updateCustomerProfile = UpdateCustomerProfile.builder()
 																		   .id("profileId")
 																		   .email("tester@gmail.com")
-																		   .password("1234")
+																		   .password("wrong password")
 																		   .name("tester")
 																		   .avatar(Optional.of("123"))
 																		   .phone(Optional.of("123456"))
 																		   .longitude(Optional.of(0.0))
 																		   .latitude(Optional.of(0.0))
 																		   .build();
-		when(customerProfileService.requireUser(updateCustomerProfile.getId(),
-												updateCustomerProfile.getPassword())).thenReturn(Optional.empty());
+		CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.builder()
+																		   .id("profileId")
+																		   .email("tester_1@gmail.com")
+																		   .password("correct password")
+																		   .name("tester1")
+																		   .avatar("123")
+																		   .phone("123456")
+																		   .longitude(0.0)
+																		   .latitude(0.0)
+																		   .postedListings(List.of())
+																		   .starredListings(List.of())
+																		   .build();
+		when(customerProfileRepository.getCustomerProfile("profileId")).thenReturn(Optional.of(customerProfileEntity));
 		UpdateCustomerProfileResult result = customerProfileService.updateCustomerProfile(updateCustomerProfile);
 		assertTrue(result.isValidationError());
+		assertFalse(result.isCustomerNotFound());
 		assertTrue(result.getUpdatedCustomerProfile().isEmpty());
 	}
 
@@ -233,20 +242,7 @@ public class CustomerProfileServiceTest {
 																		   .longitude(Optional.of(0.0))
 																		   .latitude(Optional.of(0.0))
 																		   .build();
-		CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.builder()
-																		   .id("profileId")
-																		   .email("tester@gmail.com")
-																		   .password("1234")
-																		   .name("tester2")
-																		   .avatar("123")
-																		   .phone("123456")
-																		   .longitude(0.0)
-																		   .latitude(0.0)
-																		   .build();
-		when(customerProfileService.requireUser(updateCustomerProfile.getId(),
-												updateCustomerProfile.getPassword())).thenReturn(
-				Optional.ofNullable(customerProfileEntity));
-		when(customerProfileRepository.updateCustomerProfile(updateCustomerProfile)).thenReturn(Optional.empty());
+		when(customerProfileRepository.getCustomerProfile("profileId")).thenReturn(Optional.empty());
 		UpdateCustomerProfileResult result = customerProfileService.updateCustomerProfile(updateCustomerProfile);
 		assertFalse(result.isValidationError());
 		assertTrue(result.isCustomerNotFound());
@@ -257,38 +253,41 @@ public class CustomerProfileServiceTest {
 	public void UpdateCustomerProfile_WhenCustomerExistsAndValidationPass_ReturnUpdateCustomerProfileResult() {
 		UpdateCustomerProfile updateCustomerProfile = UpdateCustomerProfile.builder()
 																		   .id("profileId")
-																		   .email("tester@gmail.com")
-																		   .password("1234")
+																		   .email("tester_1@gmail.com")
+																		   .password("correct password")
 																		   .name("NewName")
 																		   .avatar(Optional.of("123"))
 																		   .phone(Optional.of("123456"))
 																		   .longitude(Optional.of(0.0))
 																		   .latitude(Optional.of(0.0))
 																		   .build();
-		CustomerProfileEntity oldcustomerProfileEntity = CustomerProfileEntity.builder()
-																			  .id("profileId")
-																			  .email("tester@gmail.com")
-																			  .password("1234")
-																			  .name("oldName")
-																			  .avatar("123")
-																			  .phone("123456")
-																			  .longitude(0.0)
-																			  .latitude(0.0)
-																			  .build();
-		CustomerProfileEntity newcustomerProfileEntity = CustomerProfileEntity.builder()
-																			  .id("profileId")
-																			  .email("tester@gmail.com")
-																			  .password("1234")
-																			  .name("NewName")
-																			  .avatar("123")
-																			  .phone("123456")
-																			  .longitude(0.0)
-																			  .latitude(0.0)
-																			  .build();
-		when(customerProfileService.requireUser(updateCustomerProfile.getId(),
-												updateCustomerProfile.getPassword())).thenReturn(
-				Optional.ofNullable(oldcustomerProfileEntity));
-		when(customerProfileRepository.updateCustomerProfile(updateCustomerProfile)).thenReturn(Optional.of(newcustomerProfileEntity));
+		CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.builder()
+																		   .id("profileId")
+																		   .email("tester_1@gmail.com")
+																		   .password("correct password")
+																		   .name("tester1")
+																		   .avatar("123")
+																		   .phone("123456")
+																		   .longitude(0.0)
+																		   .latitude(0.0)
+																		   .postedListings(List.of())
+																		   .starredListings(List.of())
+																		   .build();
+		CustomerProfileEntity updatedcustomerProfileEntity = CustomerProfileEntity.builder()
+																				  .id("profileId")
+																				  .email("tester_1@gmail.com")
+																				  .password("correct password")
+																				  .name("NewName")
+																				  .avatar("123")
+																				  .phone("123456")
+																				  .longitude(0.0)
+																				  .latitude(0.0)
+																				  .postedListings(List.of())
+																				  .starredListings(List.of())
+																				  .build();
+		when(customerProfileRepository.getCustomerProfile("profileId")).thenReturn(Optional.of(customerProfileEntity));
+		when(customerProfileRepository.updateCustomerProfile(updateCustomerProfile)).thenReturn(
+				Optional.ofNullable(updatedcustomerProfileEntity));
 		UpdateCustomerProfileResult result = customerProfileService.updateCustomerProfile(updateCustomerProfile);
 		assertFalse(result.isValidationError());
 		assertFalse(result.isCustomerNotFound());
@@ -506,8 +505,10 @@ public class CustomerProfileServiceTest {
 	@Test
 	public void requireUser_UserNotFound_ReturnEmptyCustomerProfileEntity() {
 		when(customerProfileRepository.getCustomerProfile("nonExistentId")).thenReturn(Optional.empty());
-		Optional<CustomerProfileEntity> result = customerProfileService.requireUser("nonExistentId", "testPassword");
-		assertFalse(result.isPresent());
+		RequireUserResult result = customerProfileService.requireUser("nonExistentId", "testPassword");
+		assertTrue(result.isIdNotExists());
+		assertFalse(result.isPasswordIsWrong());
+		assertTrue(result.getUpdatedRequireUserResult().isEmpty());
 	}
 
 	@Test
@@ -515,8 +516,10 @@ public class CustomerProfileServiceTest {
 		CustomerProfileEntity customerProfileEntity = new CustomerProfileEntity();
 		customerProfileEntity.setPassword("CorrectPassword");
 		when(customerProfileRepository.getCustomerProfile("ExistentId")).thenReturn(Optional.of(customerProfileEntity));
-		Optional<CustomerProfileEntity> result = customerProfileService.requireUser("ExistentId", "WrongPassword");
-		assertFalse(result.isPresent());
+		RequireUserResult result = customerProfileService.requireUser("ExistentId", "WrongPassword");
+		assertFalse(result.isIdNotExists());
+		assertTrue(result.isPasswordIsWrong());
+		assertTrue(result.getUpdatedRequireUserResult().isEmpty());
 
 	}
 
@@ -525,9 +528,11 @@ public class CustomerProfileServiceTest {
 		CustomerProfileEntity CustomerProfileEntity = new CustomerProfileEntity();
 		CustomerProfileEntity.setPassword("CorrectPassword");
 		when(customerProfileRepository.getCustomerProfile("ExistId")).thenReturn(Optional.of(CustomerProfileEntity));
-		Optional<CustomerProfileEntity> result = customerProfileService.requireUser("ExistId", "CorrectPassword");
-		assertTrue(result.isPresent());
-		assertEquals("CorrectPassword", result.get().getPassword());
+		RequireUserResult result = customerProfileService.requireUser("ExistId", "CorrectPassword");
+		assertFalse(result.isIdNotExists());
+		assertFalse(result.isPasswordIsWrong());
+		assertTrue(result.getUpdatedRequireUserResult().isPresent());
+		assertEquals("CorrectPassword", result.getUpdatedRequireUserResult().get().getPassword());
 	}
 
 	@Test
@@ -630,13 +635,43 @@ public class CustomerProfileServiceTest {
 
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyPassword).isEmpty());
 	}
+
 	@Test
-	public void customerLogin_WithEmptyEmail_ReturnsEmptyOptional(){
+	public void customerLogin_WithEmptyEmail_ReturnsEmptyOptional() {
 		Login loginWithEmptyEmail = Login.builder()
 										 .email(Optional.empty())
 										 .password(Optional.of("password"))
 										 .build();
 		assertTrue(customerProfileService.customerLogin(loginWithEmptyEmail).isEmpty());
+	}
+
+	@Test
+	public void customerLogin_WithCorrectInformation_ReturnCustomerProfile() {
+		CustomerProfileEntity customerProfileEntity = CustomerProfileEntity.builder()
+																		   .id("profileId")
+																		   .email("tester@gmail.com")
+																		   .password("1234")
+																		   .name("tester")
+																		   .avatar("123")
+																		   .phone("123456")
+																		   .longitude(0.0)
+																		   .latitude(0.0)
+																		   .postedListings(List.of())
+																		   .starredListings(List.of())
+																		   .build();
+		CustomerProfile customerProfile = customerProfileEntity.toDomain();
+		Login login = Login.builder()
+						   .email(Optional.of("tester@gmail.com"))
+						   .password(Optional.of("1234"))
+						   .build();
+		when(customerProfileRepository.getCustomerProfileByEmail(login.getEmail().get()))
+				.thenReturn(Optional.of(customerProfileEntity));
+		when(customerProfileRepository.getCustomerProfile("profileId")).thenReturn(Optional.of(customerProfileEntity));
+		Optional<CustomerProfile> result = customerProfileService.customerLogin(login);
+		assertTrue(result.isPresent());
+		assertEquals(customerProfile.getEmail(), result.get().getEmail());
+		assertEquals(customerProfile.getName(), result.get().getName());
+
 	}
 
 	@Test
