@@ -78,14 +78,6 @@ public class CustomerProfileService {
 			updateCustomerProfileResult.setValidationError(true);
 			return updateCustomerProfileResult;
 		}
-//		Optional<CustomerProfileEntity> customerProfileEntity =
-//				requireUser(updateCustomerProfile.getId(),
-//							updateCustomerProfile.getPassword());
-
-//		if (customerProfileEntity.isEmpty()) {
-//			updateCustomerProfileResult.setValidationError(true);
-//			return updateCustomerProfileResult;
-//		}
 		Optional<CustomerProfile> customerProfile =
 				customerProfileRepository.updateCustomerProfile(updateCustomerProfile)
 										 .map(CustomerProfileEntity::toDomain);
@@ -217,10 +209,6 @@ public class CustomerProfileService {
 		if (login.getEmail().isEmpty() || login.getPassword().isEmpty()) {
 			return Optional.empty();
 		}
-//		Optional<CustomerProfile> existedCustomer = customerProfileRepository.getCustomerProfileByEmail(login.getEmail().get())
-//																			 .map(CustomerProfileEntity::toDomain);
-//		return existedCustomer.flatMap(customerProfile -> requireUser(customerProfile.getId(),
-//																	  login.getPassword().get()).map(CustomerProfileEntity::toDomain));
 		Optional<CustomerProfileEntity> customerProfileEntity = customerProfileRepository
 				.getCustomerProfileByEmail(login.getEmail().get());
 		if (customerProfileEntity.isPresent()) {
