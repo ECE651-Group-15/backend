@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasItem;
 
 @QuarkusTest
 public class CustomerProfileResourcesIT {
@@ -33,7 +34,12 @@ public class CustomerProfileResourcesIT {
 			    "latitude": 45
 			}
 			""";
-
+	private final String PAGE_DTO = """
+			{
+				"page": %d,
+				"pageSize": %d
+			}
+			""";
 	private final String VALID_LISTING_TEMPLATE = """
 			{
 			  "title": "Vintage Record Player",
@@ -255,6 +261,21 @@ public class CustomerProfileResourcesIT {
 		deleteCustomerProfile(customerId);
 	}
 
+	//	@Test
+//	public void updateCustomerProfile_whenCustomerNotExists_ReturnErrorMessage(){
+//		String inValidUpdateProfile = String.format(UPDATE_CUSTOMER_PROFILE_TEMPLATE,
+//													UUID.randomUUID(),
+//													"nikola.tesla@example.com",
+//													"122335");
+//		RestAssured.given()
+//				   .contentType("application/json")
+//				   .body(inValidUpdateProfile)
+//				   .when().post("/v1/api/profile/update-profile/" )
+//				   .then()
+//				   .statusCode(200)
+//				   .body("code", is(4001))
+//				   .body("message", containsString("Cannot find customer with id "));
+//	}
 	@Test
 	public void deleteCustomerProfile_whenCustomerHasPostedListings_doNotDeleteProfile() {
 		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE,
@@ -329,20 +350,68 @@ public class CustomerProfileResourcesIT {
 	}
 
 	@Test
+	public void getCustomerProfileByPage_whenPageIsInvalid_returnsErrorMessage() {
+		String InValidPageDTO = String.format(PAGE_DTO, -1, 40);
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(InValidPageDTO)
+				   .when().post("/v1/api/profile/get-profile/page")
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001))
+				   .body("message", containsString("Page number and page size cannot be negative."));
+	}
+
+	@Test
+	public void getCustomerProfileByPage_WhenCustomerExist_ReturnsPage() {
+		final String VALID_CUSTOMER_PROFILE = """
+				{
+				  "name": "%s",
+				  "email": "%s@example.com",
+				  "password": "%s",
+				  "phone": "1234567890"
+				}
+				""";
+		String name = UUID.randomUUID().toString();
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE,
+											name,
+											UUID.randomUUID(),
+											"123456");
+		String customerId = RestAssured.given()
+									   .contentType("application/json")
+									   .body(validProfile)
+									   .when()
+									   .post("/v1/api/profile/create-profile")
+									   .then()
+									   .statusCode(200)
+									   .body("data.name", is(name))
+									   .extract().path("data.id");
+		String ValidPageDTO = String.format(PAGE_DTO, 0, 40);
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(ValidPageDTO)
+				   .when().post("/v1/api/profile/get-profile/page")
+				   .then()
+				   .statusCode(200)
+				   .body("data.customerProfiles.id", hasItem(customerId));
+		deleteCustomerProfile(customerId);
+	}
+
+	@Test
 	public void getCustomerProfileByPage_internal_whenCustomerExist_returnsProfile() {
 		final String VALID_CUSTOMER_PROFILE = """
-			{
-			  "name": "%s",
-			  "email": "%s@example.com",
-			  "password": "%s",
-			  "phone": "1234567890"
-			}
-			""";
+				{
+				  "name": "%s",
+				  "email": "%s@example.com",
+				  "password": "%s",
+				  "phone": "1234567890"
+				}
+				""";
 
 		String name = UUID.randomUUID().toString();
 
 		String validProfile = String.format(VALID_CUSTOMER_PROFILE,
-		                                    name,
+											name,
 											UUID.randomUUID(),
 											"123456");
 
@@ -358,12 +427,12 @@ public class CustomerProfileResourcesIT {
 
 
 		RestAssured.given()
-		           .contentType("application/json")
-		           .when().post("/v1/api/profile/get-profile/internal/" + customerId)
-		           .then()
-		           .statusCode(200)
-		           .body("data.id", is(customerId))
-		           .body("data.name", is(name));
+				   .contentType("application/json")
+				   .when().post("/v1/api/profile/get-profile/internal/" + customerId)
+				   .then()
+				   .statusCode(200)
+				   .body("data.id", is(customerId))
+				   .body("data.name", is(name));
 
 		deleteCustomerProfile(customerId);
 	}
@@ -373,11 +442,11 @@ public class CustomerProfileResourcesIT {
 		String customerId = UUID.randomUUID().toString();
 
 		RestAssured.given()
-		           .contentType("application/json")
-		           .when().post("/v1/api/profile/get-profile/internal/" + customerId)
-		           .then()
-		           .statusCode(200)
-		           .body("code", is(4001))
-		           .body("message", is("Cannot find customer with id " + customerId + "."));
+				   .contentType("application/json")
+				   .when().post("/v1/api/profile/get-profile/internal/" + customerId)
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001))
+				   .body("message", is("Cannot find customer with id " + customerId + "."));
 	}
 }

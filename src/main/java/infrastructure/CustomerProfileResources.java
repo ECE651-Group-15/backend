@@ -35,8 +35,8 @@ public class CustomerProfileResources {
 	@Path("/create-profile")
 	public Response createCustomerProfile(CreateCustomerProfileDto createCustomerProfileDto) {
 		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                     200,
-		                                                                     Optional.empty());
+																			 200,
+																			 Optional.empty());
 		Optional<CustomerProfile> createdCustomerProfile =
 				customerProfileService.createProfile(createCustomerProfileDto.toDomain());
 		if (createdCustomerProfile.isEmpty()) {
@@ -55,8 +55,8 @@ public class CustomerProfileResources {
 				customerProfileService.getCustomerProfile(customerId);
 
 		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                     200,
-		                                                                     Optional.empty());
+																			 200,
+																			 Optional.empty());
 
 		if (fetchedCustomerProfile.isPresent()) {
 			response.setData(Optional.of(CustomerProfilesDetailsDto.fromDomain(
@@ -75,8 +75,8 @@ public class CustomerProfileResources {
 		UpdateCustomerProfileResult updateCustomerProfileResult =
 				customerProfileService.updateCustomerProfile(updateCustomerProfileDto.toDomain());
 		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                     200,
-		                                                                     Optional.empty());
+																			 200,
+																			 Optional.empty());
 		if (updateCustomerProfileResult.isCustomerNotFound()) {
 			response.setMessage(Optional.of("Cannot find customer with id " + updateCustomerProfileDto.id() + "."));
 			response.setCode(4001);
@@ -94,8 +94,8 @@ public class CustomerProfileResources {
 	@Path("/delete-profile/{customerId}")
 	public Response deleteCustomerProfile(@PathParam("customerId") String customerId) {
 		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                     200,
-		                                                                     Optional.empty());
+																			 200,
+																			 Optional.empty());
 
 		DeleteCustomerResult deleteCustomerResult = customerProfileService.deleteCustomerProfile(customerId);
 		if (deleteCustomerResult.deletedCustomerProfile().isEmpty()) {
@@ -123,15 +123,15 @@ public class CustomerProfileResources {
 		}
 		List<CustomerProfilesDetailsDto> customerProfilePage
 				= customerProfileService.getCustomerProfileByPage(pageDto.page,
-				                                                  pageDto.pageSize.orElse(20))
-				                        .stream()
-				                        .map(CustomerProfilesDetailsDto::fromDomain)
-				                        .toList();
+																  pageDto.pageSize.orElse(20))
+										.stream()
+										.map(CustomerProfilesDetailsDto::fromDomain)
+										.toList();
 
 		CustomerProfilePageDto customerProfilePageDto
 				= CustomerProfilePageDto.builder()
-				                        .customerProfiles(customerProfilePage)
-				                        .build();
+										.customerProfiles(customerProfilePage)
+										.build();
 		response.setData(Optional.ofNullable(customerProfilePageDto));
 		return Response.ok(response).build();
 	}
@@ -140,8 +140,8 @@ public class CustomerProfileResources {
 	@Path("/login")
 	public Response customerLogin(LoginDto loginDto) {
 		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                     200,
-		                                                                     Optional.empty());
+																			 200,
+																			 Optional.empty());
 
 		Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.customerLogin(loginDto.toDomain());
 		if (fetchedCustomerProfile.isEmpty()) {
@@ -157,8 +157,8 @@ public class CustomerProfileResources {
 	@Path("/check-email")
 	public Response checkEmail(CheckEmailDto checkEmailDto) {
 		ApiResponse<CustomerProfilesDetailsDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                     200,
-		                                                                     Optional.empty());
+																			 200,
+																			 Optional.empty());
 
 		Optional<CustomerProfile> fetchedCustomerProfile = customerProfileService.checkEmail(checkEmailDto.email());
 		if (fetchedCustomerProfile.isEmpty()) {
@@ -177,8 +177,8 @@ public class CustomerProfileResources {
 				customerProfileService.getCustomerProfile(customerId);
 
 		ApiResponse<CustomerProfileDetailsInternalDto> response = new ApiResponse<>(Optional.empty(),
-		                                                                            200,
-		                                                                            Optional.empty());
+																					200,
+																					Optional.empty());
 
 		if (fetchedCustomerProfile.isPresent()) {
 			response.setData(Optional.of(CustomerProfileDetailsInternalDto.fromDomain(
