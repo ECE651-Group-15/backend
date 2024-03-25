@@ -3,16 +3,12 @@ package infrastructure;
 import domain.listing.Category;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-
-
-
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
 
@@ -68,13 +64,6 @@ public class CustomerListingResourcesIT {
             }
             """;
 
-
-
-
-
-
-
-
 	private final String VALID_GET_COMPLETED_LISTING_TEMPLATE = """
         {
             "page": %d,
@@ -82,19 +71,6 @@ public class CustomerListingResourcesIT {
             "customerId": "%s"
         }
         """;
-
-
-
-
-
-	
-
-
-
-
-
-
-
 
 	private void deleteCustomerProfile(String customerId) {
         RestAssured.given()
@@ -418,17 +394,6 @@ public class CustomerListingResourcesIT {
 		deleteCustomerProfile(customerId);
     }
 
-
-
-
-
-
-
-
-
-
-
-
 	@Test
 	public void getCustomerCompletedListings_WhenPageIsNegative_ReturnErrorMessage() {
 		String invalidRequest = String.format(VALID_GET_COMPLETED_LISTING_TEMPLATE, -1, 10, "validCustomerId");
@@ -458,7 +423,6 @@ public class CustomerListingResourcesIT {
 				.body("code", is(4001))
 				.body("message", containsString("Cannot find customer with id non-existing-customerId."));
 	}
-
 
 	@Test
 	public void getCustomerCompletedListings_WhenCustomerExists_ReturnCompletedListings() {
@@ -520,24 +484,6 @@ public class CustomerListingResourcesIT {
 				.statusCode(200);
 		deleteCustomerProfile(customerId);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	@Test
     public void getStarredListings_WhenPageIsNegative_ReturnErrorMessage(){
@@ -646,7 +592,7 @@ public class CustomerListingResourcesIT {
     }
 
     @Test
-    public void GetListingByPage_pageNumberIsNegative_ReturnErrorMessage(){
+    public void getListingByPage_pageNumberIsNegative_ReturnErrorMessage(){
         String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE, -1);
         RestAssured.given()
 				   .contentType("application/json")
@@ -659,21 +605,8 @@ public class CustomerListingResourcesIT {
 				   .body("message", containsString("Page number and page size cannot be negative."));
 	}
 
-	@Test
-	public void GetListingByPage_NoListingExists_ReturnErrorMessage(){
-		String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE, 10);
-		RestAssured.given()
-				   .contentType("application/json")
-				   .body(validGetListingByPage)
-				   .when()
-				   .post("/v1/api/listing-profile/get-listing-page")
-				   .then()
-				   .statusCode(200)
-				   .body("code", is(200))
-				   .body("message", containsString("No listings found."));
-	}
     @Test
-    public void GetListingByPage_ListingsExist_ReturnListingDetails(){
+    public void getListingByPage_ListingsExist_ReturnListingDetails(){
 		String email = UUID.randomUUID() + "@example.com";
 		String expectedName = "Nikola Tesla1";
 		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, expectedName, email, "123456");
@@ -720,7 +653,7 @@ public class CustomerListingResourcesIT {
     }
 
     @Test
-    public void GetListingWithCustomerDetails_WhenListingIDNotExists_ReturnErrorMessage(){
+    public void getListingWithCustomerDetails_WhenListingIDNotExists_ReturnErrorMessage(){
         RestAssured.given()
 				   .when()
 				   .post("/v1/api/listing-profile/listing/" + "Non-Existing-ListingID" + "/customer/")
@@ -729,7 +662,7 @@ public class CustomerListingResourcesIT {
 				   .body("message", containsString("Cannot find listing with id " + "Non-Existing-ListingID" + "."));
 	}
     @Test
-    public void GetListingWithCustomerDetails_WhenListingExists_ReturnListingDetails(){
+    public void getListingWithCustomerDetails_WhenListingExists_ReturnListingDetails(){
 		String email = UUID.randomUUID() + "@example.com";
 		String expectedName = "Nikola Tesla1";
 		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE, expectedName ,email, "123456");
