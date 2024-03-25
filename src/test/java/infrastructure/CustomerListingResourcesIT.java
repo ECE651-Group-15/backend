@@ -659,7 +659,19 @@ public class CustomerListingResourcesIT {
 				   .body("message", containsString("Page number and page size cannot be negative."));
 	}
 
-
+	@Test
+	public void GetListingByPage_NoListingExists_ReturnErrorMessage(){
+		String validGetListingByPage = String.format(VALID_GET_LISTING_PAGE_TEMPLATE, 10);
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(validGetListingByPage)
+				   .when()
+				   .post("/v1/api/listing-profile/get-listing-page")
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(200))
+				   .body("message", containsString("No listings found."));
+	}
     @Test
     public void GetListingByPage_ListingsExist_ReturnListingDetails(){
 		String email = UUID.randomUUID() + "@example.com";
@@ -716,7 +728,6 @@ public class CustomerListingResourcesIT {
 				   .statusCode(200)
 				   .body("message", containsString("Cannot find listing with id " + "Non-Existing-ListingID" + "."));
 	}
-
     @Test
     public void GetListingWithCustomerDetails_WhenListingExists_ReturnListingDetails(){
 		String email = UUID.randomUUID() + "@example.com";
