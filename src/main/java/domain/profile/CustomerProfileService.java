@@ -3,10 +3,7 @@ package domain.profile;
 import domain.MD5Util;
 import domain.listing.ListingRepository;
 import domain.listing.StarListing;
-import infrastructure.result.CustomerStarResult;
-import infrastructure.result.CustomerUnStarResult;
-import infrastructure.result.DeleteCustomerResult;
-import infrastructure.result.UpdateCustomerProfileResult;
+import infrastructure.result.*;
 import infrastructure.sql.entity.CustomerProfileEntity;
 import infrastructure.sql.entity.ListingEntity;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -73,19 +70,17 @@ public class CustomerProfileService {
 										   .validationError(false)
 										   .updatedCustomerProfile(Optional.empty())
 										   .build();
-		Optional<CustomerProfileEntity> customerProfileEntity =
-				requireUser(updateCustomerProfile.getId(),
-							updateCustomerProfile.getPassword());
-		if (customerProfileEntity.isEmpty()) {
+		RequireUserResult requireUserResult = requireUser(updateCustomerProfile.getId(), updateCustomerProfile.getPassword());
+		if (requireUserResult.isIdNotExists()) {
+			updateCustomerProfileResult.setCustomerNotFound(true);
+			return updateCustomerProfileResult;
+		} else if (requireUserResult.isPasswordIsWrong()) {
 			updateCustomerProfileResult.setValidationError(true);
 			return updateCustomerProfileResult;
 		}
 		Optional<CustomerProfile> customerProfile =
 				customerProfileRepository.updateCustomerProfile(updateCustomerProfile)
 										 .map(CustomerProfileEntity::toDomain);
-		if (customerProfile.isEmpty()) {
-			updateCustomerProfileResult.setCustomerNotFound(true);
-		}
 		updateCustomerProfileResult.setUpdatedCustomerProfile(customerProfile);
 		return updateCustomerProfileResult;
 	}
@@ -185,9 +180,21 @@ public class CustomerProfileService {
 		return customerUnStarResult;
 	}
 
-	public Optional<CustomerProfileEntity> requireUser(String id, String password) {
-		return customerProfileRepository.getCustomerProfile(id)
-										.filter(profile -> profile.getPassword().equals(password));
+	public RequireUserResult requireUser(String id, String password) {
+		RequireUserResult requireUserResult = RequireUserResult.builder()
+															   .idNotExists(false)
+															   .passwordIsWrong(false)
+															   .updatedRequireUser(Optional.empty())
+															   .build();
+		Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(id);
+		if (customerProfileEntityOptional.isEmpty()) {
+			requireUserResult.setIdNotExists(true);
+		} else if (!customerProfileEntityOptional.get().getPassword().equals(password)) {
+			requireUserResult.setPasswordIsWrong(true);
+		} else {
+			requireUserResult.setUpdatedRequireUser(customerProfileEntityOptional);
+		}
+		return requireUserResult;
 	}
 
 	public List<CustomerProfile> getCustomerProfileByPage(int page,
@@ -202,11 +209,16 @@ public class CustomerProfileService {
 		if (login.getEmail().isEmpty() || login.getPassword().isEmpty()) {
 			return Optional.empty();
 		}
-		Optional<CustomerProfile> existedCustomer = customerProfileRepository.getCustomerProfileByEmail(login.getEmail().get())
-																			 .map(CustomerProfileEntity::toDomain);
-		return existedCustomer.flatMap(customerProfile -> requireUser(customerProfile.getId(),
-																	  login.getPassword().get()).map(CustomerProfileEntity::toDomain));
-
+		Optional<CustomerProfileEntity> customerProfileEntity = customerProfileRepository
+				.getCustomerProfileByEmail(login.getEmail().get());
+		if (customerProfileEntity.isPresent()) {
+			RequireUserResult requireUserResult = requireUser(customerProfileEntity.get().getId(), login.getPassword().get());
+			if (requireUserResult.isIdNotExists() || requireUserResult.isPasswordIsWrong()) {
+				return Optional.empty();
+			}
+			return requireUserResult.getUpdatedRequireUser().map(CustomerProfileEntity::toDomain);
+		}
+		return Optional.empty();
 	}
 
 	public Optional<CustomerProfile> checkEmail(String email) {
