@@ -9,7 +9,7 @@ import java.util.Optional;
 @Data
 @Builder
 public class UpdateListingResult {
-    private boolean customerNotFound;
-    private boolean listingNotFound;
-    private Optional<ListingDetails> updatedListing;
+    boolean customerNotFound;
+    boolean listingNotFound;
+    Optional<ListingDetails> updatedListing;
 }

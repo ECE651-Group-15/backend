@@ -9,7 +9,7 @@ import java.util.Optional;
 @Data
 @Builder
 public class RequireUserResult {
-	private boolean IdNotExists;
-	private boolean PasswordIsWrong;
-	private Optional<CustomerProfileEntity> UpdatedRequireUserResult;
+	boolean idNotExists;
+	boolean passwordIsWrong;
+	Optional<CustomerProfileEntity> updatedRequireUser;
 }

@@ -508,7 +508,7 @@ public class CustomerProfileServiceTest {
 		RequireUserResult result = customerProfileService.requireUser("nonExistentId", "testPassword");
 		assertTrue(result.isIdNotExists());
 		assertFalse(result.isPasswordIsWrong());
-		assertTrue(result.getUpdatedRequireUserResult().isEmpty());
+		assertTrue(result.getUpdatedRequireUser().isEmpty());
 	}
 
 	@Test
@@ -519,7 +519,7 @@ public class CustomerProfileServiceTest {
 		RequireUserResult result = customerProfileService.requireUser("ExistentId", "WrongPassword");
 		assertFalse(result.isIdNotExists());
 		assertTrue(result.isPasswordIsWrong());
-		assertTrue(result.getUpdatedRequireUserResult().isEmpty());
+		assertTrue(result.getUpdatedRequireUser().isEmpty());
 
 	}
 
@@ -531,8 +531,8 @@ public class CustomerProfileServiceTest {
 		RequireUserResult result = customerProfileService.requireUser("ExistId", "CorrectPassword");
 		assertFalse(result.isIdNotExists());
 		assertFalse(result.isPasswordIsWrong());
-		assertTrue(result.getUpdatedRequireUserResult().isPresent());
-		assertEquals("CorrectPassword", result.getUpdatedRequireUserResult().get().getPassword());
+		assertTrue(result.getUpdatedRequireUser().isPresent());
+		assertEquals("CorrectPassword", result.getUpdatedRequireUser().get().getPassword());
 	}
 
 	@Test

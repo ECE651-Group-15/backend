@@ -182,9 +182,9 @@ public class CustomerProfileService {
 
 	public RequireUserResult requireUser(String id, String password) {
 		RequireUserResult requireUserResult = RequireUserResult.builder()
-															   .IdNotExists(false)
-															   .PasswordIsWrong(false)
-															   .UpdatedRequireUserResult(Optional.empty())
+															   .idNotExists(false)
+															   .passwordIsWrong(false)
+															   .updatedRequireUser(Optional.empty())
 															   .build();
 		Optional<CustomerProfileEntity> customerProfileEntityOptional = customerProfileRepository.getCustomerProfile(id);
 		if (customerProfileEntityOptional.isEmpty()) {
@@ -192,7 +192,7 @@ public class CustomerProfileService {
 		} else if (!customerProfileEntityOptional.get().getPassword().equals(password)) {
 			requireUserResult.setPasswordIsWrong(true);
 		} else {
-			requireUserResult.setUpdatedRequireUserResult(customerProfileEntityOptional);
+			requireUserResult.setUpdatedRequireUser(customerProfileEntityOptional);
 		}
 		return requireUserResult;
 	}
@@ -216,7 +216,7 @@ public class CustomerProfileService {
 			if (requireUserResult.isIdNotExists() || requireUserResult.isPasswordIsWrong()) {
 				return Optional.empty();
 			}
-			return requireUserResult.getUpdatedRequireUserResult().map(CustomerProfileEntity::toDomain);
+			return requireUserResult.getUpdatedRequireUser().map(CustomerProfileEntity::toDomain);
 		}
 		return Optional.empty();
 	}
