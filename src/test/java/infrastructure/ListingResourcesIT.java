@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.notNullValue;
 
 @QuarkusTest
 public class ListingResourcesIT {
@@ -178,6 +176,22 @@ public class ListingResourcesIT {
 	}
 
 	@Test
+	public void updateListing_whenCustomerNotFound_ReturnsError() {
+		createListing();
+		String listingId = "listingId";
+		String invalidCustomerId = "non existing customerId";
+		String validListing = String.format(VALID_UPDATE_LISTING_TEMPLATE, listingId, "newTitle", Category.OTHER, invalidCustomerId);
+		RestAssured.given()
+				.contentType("application/json")
+				.body(validListing)
+				.when().post("/v1/api/listings/update-listing")
+				.then()
+				.statusCode(200)
+				.body("code", is(4001))
+				.body("message", containsString("Cannot update listing with id " + listingId + " as customer was not found with given ID."));
+	}
+
+	@Test
 	public void updateListing_whenListingExists_ReturnsListingDetails() {
 		createListing();
 		String validListing = String.format(VALID_UPDATE_LISTING_TEMPLATE, listingId, "NewDescription", Category.OTHER, customerId);
@@ -248,68 +262,6 @@ public class ListingResourcesIT {
 				   .then()
 				   .statusCode(200)
 				   .body("data[0].title",containsString("Vintage"));
-	}
-	@Test
-	public void createListing_successfulCreation_returnsListingDetails() {
-		String validListing = String.format(VALID_LISTING_TEMPLATE, Category.OTHER, customerId);
-		RestAssured.given()
-				.contentType("application/json")
-				.body(validListing)
-				.when().post("/v1/api/listings/create-listing")
-				.then()
-				.statusCode(200)
-				.body("data.customerId", is(customerId))
-				.body("data", notNullValue());
-	}
-
-	@Test
-	public void getListing_existingListing_returnsListingDetails() {
-		createListing();
-		RestAssured.given()
-				.when().post("/v1/api/listings/get-listing/" + listingId)
-				.then()
-				.statusCode(200)
-				.body("data.id", is(listingId))
-				.body("data", notNullValue());
-	}
-
-	@Test
-	public void updateListing_existingListing_updatesSuccessfully() {
-		createListing();
-		String updatedListing = String.format(VALID_UPDATE_LISTING_TEMPLATE, listingId, "UpdatedDescription", Category.OTHER, customerId);
-		RestAssured.given()
-				.contentType("application/json")
-				.body(updatedListing)
-				.when().post("/v1/api/listings/update-listing")
-				.then()
-				.statusCode(200)
-				.body("data.description", is("UpdatedDescription"))
-				.body("data", notNullValue());
-	}
-
-	@Test
-	public void deleteListing_existingListing_deletesSuccessfully() {
-		createListing();
-		RestAssured.given()
-				.when().post("/v1/api/listings/delete-listing/" + listingId)
-				.then()
-				.statusCode(200)
-				.body("data.id", is(listingId))
-				.body("data", notNullValue());
-	}
-
-	@Test
-	public void searchListing_withValidCriteria_returnsListings() {
-		createListing();
-		String validSearch = String.format(VALID_SEARCH_LISTING_TEMPLATE, "Vintage");
-		RestAssured.given()
-				.contentType("application/json")
-				.body(validSearch)
-				.when().post("/v1/api/listings/search-listing")
-				.then()
-				.statusCode(200)
-				.body("data[0].title", containsString("Vintage"))
-				.body("data", notNullValue());
 	}
 }
 
