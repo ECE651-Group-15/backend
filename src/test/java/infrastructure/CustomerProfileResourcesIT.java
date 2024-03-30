@@ -40,6 +40,17 @@ public class CustomerProfileResourcesIT {
 				"pageSize": %d
 			}
 			""";
+	private final String LOGIN_DTO = """
+			{
+				"email": "%s",
+				"password": "%s"
+			}
+			""";
+	private final String CHECKEMAIL_DTO = """
+			{
+				"email": "%s"
+			}
+			""";
 	private final String VALID_LISTING_TEMPLATE = """
 			{
 			  "title": "Vintage Record Player",
@@ -448,5 +459,83 @@ public class CustomerProfileResourcesIT {
 				   .statusCode(200)
 				   .body("code", is(4001))
 				   .body("message", is("Cannot find customer with id " + customerId + "."));
+	}
+
+	@Test
+	public void customerLogin_WhenCustomerDoesNotExist_ReturnErrorMessage() {
+		String InValidLOGINDTO = String.format(LOGIN_DTO, "non-existing email", "non-existing phone");
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(InValidLOGINDTO)
+				   .when().post("/v1/api/profile/login")
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001))
+				   .body("message", containsString("Cannot find customer with email"));
+	}
+
+	@Test
+	public void customerLogin_WhenCustomerExist_ReturnCustomerProfilesDetails() {
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE,
+											"tester12345",
+											"123456");
+		String customerId = RestAssured.given()
+									   .contentType("application/json")
+									   .body(validProfile)
+									   .when()
+									   .post("/v1/api/profile/create-profile")
+									   .then()
+									   .statusCode(200)
+									   .body("data.name", is("Nikola Tesla"))
+									   .extract().path("data.id");
+
+		String validLoginDTO = String.format(LOGIN_DTO, "tester12345@example.com", "123456");
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(validLoginDTO)
+				   .when().post("/v1/api/profile/login")
+				   .then()
+				   .statusCode(200)
+				   .body("data.id", is(customerId));
+		deleteCustomerProfile(customerId);
+	}
+
+	@Test
+	public void checkEmail_WhenCustomerNotExists_ReturnErrorMessage() {
+		String InValidcheckemaildto = String.format(CHECKEMAIL_DTO, "non-existing Email");
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(InValidcheckemaildto)
+				   .when().post("/v1/api/profile/check-email")
+				   .then()
+				   .statusCode(200)
+				   .body("code", is(4001))
+				   .body("message", containsString("Cannot find customer with email"));
+	}
+
+	@Test
+	public void checkEmail_WhenCustomerExists_ReturnCustomerProfilesDetails() {
+		String validProfile = String.format(VALID_CUSTOMER_PROFILE_TEMPLATE,
+											"tester12345",
+											"123456");
+		String customerId = RestAssured.given()
+									   .contentType("application/json")
+									   .body(validProfile)
+									   .when()
+									   .post("/v1/api/profile/create-profile")
+									   .then()
+									   .statusCode(200)
+									   .body("data.name", is("Nikola Tesla"))
+									   .extract().path("data.id");
+
+		String validcheckemaildto = String.format(CHECKEMAIL_DTO, "tester12345@example.com");
+		RestAssured.given()
+				   .contentType("application/json")
+				   .body(validcheckemaildto)
+				   .when().post("/v1/api/profile/check-email")
+				   .then()
+				   .statusCode(200)
+				   .body("data.id", is(customerId));
+		deleteCustomerProfile(customerId);
 	}
 }
