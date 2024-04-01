@@ -176,6 +176,22 @@ public class ListingResourcesIT {
 	}
 
 	@Test
+	public void updateListing_whenCustomerNotFound_ReturnsError() {
+		createListing();
+		String listingId = "listingId";
+		String invalidCustomerId = "non existing customerId";
+		String validListing = String.format(VALID_UPDATE_LISTING_TEMPLATE, listingId, "newTitle", Category.OTHER, invalidCustomerId);
+		RestAssured.given()
+				.contentType("application/json")
+				.body(validListing)
+				.when().post("/v1/api/listings/update-listing")
+				.then()
+				.statusCode(200)
+				.body("code", is(4001))
+				.body("message", containsString("Cannot update listing with id " + listingId + " as customer was not found with given ID."));
+	}
+
+	@Test
 	public void updateListing_whenListingExists_ReturnsListingDetails() {
 		createListing();
 		String validListing = String.format(VALID_UPDATE_LISTING_TEMPLATE, listingId, "NewDescription", Category.OTHER, customerId);
